@@ -1,5 +1,7 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using Lefty.Cyan.Model;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using System.Reflection;
@@ -8,6 +10,7 @@ namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "cyan", Description = "Azure Swiss-Knife" )]
+[Subcommand( typeof( ValidateCommand ) )]
 [VersionOptionFromMember( MemberName = nameof( GetVersion ) )]
 public class Program
 {
@@ -21,7 +24,7 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .MinimumLevel.Override( "Cyan.Services", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Warning )
+            .MinimumLevel.Override( "Lefty.Cyan.Services", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Warning )
             .WriteTo.Console()
             .CreateLogger();
 
@@ -35,6 +38,18 @@ public class Program
 
         svc.AddLogging( loggingBuilder =>
             loggingBuilder.AddSerilog( dispose: true ) );
+
+        svc.AddOptions();
+
+        // CyanConfiguration
+        svc.AddOptions<CyanConfiguration>().ValidateOnStart();
+        svc.Configure<CyanConfiguration>( x =>
+        {
+            x.Root = Environment.GetEnvironmentVariable( "CYAN_ROOT" ) ?? Environment.CurrentDirectory;
+            x.EntraDomain = Environment.GetEnvironmentVariable( "CYAN_ENTRA" ) ?? "";
+            x.DevopsOrganization = Environment.GetEnvironmentVariable( "CYAN_DEVOPS_ORG" ) ?? "";
+        } );
+        svc.AddSingleton<IValidateOptions<CyanConfiguration>, CyanConfigurationValidation>();
 
         var sp = svc.BuildServiceProvider();
 
@@ -52,8 +67,7 @@ public class Program
         }
         catch ( Exception ex )
         {
-            Console.WriteLine( "ftl: unhandled exception during setup" );
-            Console.WriteLine( ex.ToString() );
+            logger.Fatal( ex, "Unhandled exception during setup" );
 
             return 2;
         }

@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+    xmlns="urn:cyan"
+    targetNamespace="urn:cyan"
+    xmlns:tns="urn:cyan"
+    elementFormDefault="qualified"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ Azure
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="azure">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+          <xsd:element name="acr" type="tns:resource" />
+          <xsd:element name="aks" type="tns:resource" />
+          <xsd:element name="dataBricks" type="tns:resource" />
+          <xsd:element name="keyVault" type="tns:resource" />
+          <xsd:element name="netAppFiles" type="tns:resource" />
+          <xsd:element name="resourceGroup" type="tns:resource" />
+          <xsd:element name="subscription" type="tns:resource" />
+        </xsd:choice>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ Devops
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="devops">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="project" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="repository" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ DNS
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="dns">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="environmentList" type="dnsEnvironmentList" minOccurs="0" maxOccurs="unbounded">
+          <xsd:unique name="uqEnvListEnvs">
+            <xsd:selector xpath=" tns:environment " />
+            <xsd:field xpath=" @name" />
+          </xsd:unique>
+
+          <xsd:unique name="uqEnvListHosts">
+            <xsd:selector xpath=" tns:*/tns:host " />
+            <xsd:field xpath=" @name" />
+          </xsd:unique>
+        </xsd:element>
+
+        <xsd:element name="environment" type="dnsEnvironment" minOccurs="0" maxOccurs="unbounded">
+          <xsd:unique name="uqEnvHosts">
+            <xsd:selector xpath=" tns:*/tns:host " />
+            <xsd:field xpath=" @name" />
+          </xsd:unique>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:unique name="uqEnvs">
+      <xsd:selector xpath=" tns:environment " />
+      <xsd:field xpath=" @name" />
+    </xsd:unique>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ RBAC
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="rbac">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="window" minOccurs="0">
+          <xsd:complexType>
+            <xsd:attribute name="from" type="xsd:date" use="required" />
+            <xsd:attribute name="to" type="xsd:date" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="jump" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:attribute name="server" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="azure" minOccurs="0">
+          <xsd:complexType>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+              <xsd:element name="acr" type="tns:roleAssignment" />
+              <xsd:element name="aks" type="tns:roleAssignment" />
+              <xsd:element name="dataBricks" type="tns:roleAssignment" />
+              <xsd:element name="keyVault" type="tns:roleAssignment" />
+              <xsd:element name="netAppFiles" type="tns:roleAssignment" />
+              <xsd:element name="resourceGroup" type="tns:roleAssignment" />
+              <xsd:element name="subscription" type="tns:roleAssignment" />
+            </xsd:choice>
+          </xsd:complexType>
+        </xsd:element>
+
+        <xsd:element name="devops">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="project" type="tns:projectRbac" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+
+            <xsd:attribute name="access" type="tns:devopsAccessType" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:key name="uqJumpServers">
+      <xsd:selector xpath=" tns:jump " />
+      <xsd:field xpath=" @server " />
+    </xsd:key>
+
+    <xsd:key name="uqDevopsProjects">
+      <xsd:selector xpath=" tns:devops/tns:project " />
+      <xsd:field xpath=" @name " />
+    </xsd:key>
+
+    <xsd:key name="uqAzureResx">
+      <xsd:selector xpath=" tns:azure/tns:* " />
+      <xsd:field xpath=" @name " />
+    </xsd:key>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ Complex
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:complexType name="dnsEnvironment">
+    <xsd:sequence>
+      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" />
+    </xsd:sequence>
+
+    <xsd:attribute name="name" type="environmentNameType" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="dnsEnvironmentList">
+    <xsd:sequence>
+      <xsd:element name="environment" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:attribute name="name" type="tns:environmentNameType" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="dnsHost">
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="dnsZone">
+    <xsd:sequence>
+      <xsd:element name="host" type="tns:dnsHost" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="projectRbac">
+    <xsd:sequence>
+      <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:attribute name="name" type="xsd:string" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="team" minOccurs="0" maxOccurs="unbounded">
+        <xsd:complexType>
+          <xsd:attribute name="name" type="xsd:string" use="required" />
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+
+    <xsd:attribute name="name" type="tns:projectNameType" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="resource">
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+  <xsd:complexType name="roleAssignment">
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="role" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ Simple
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:simpleType name="devopsAccessType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Basic" />
+      <xsd:enumeration value="Stakeholder" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="environmentNameType">
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="^[a-z]+(-[a-z]+)*$" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="projectNameType">
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+
+  <xsd:simpleType name="repositoryNameType">
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+
+</xsd:schema>
