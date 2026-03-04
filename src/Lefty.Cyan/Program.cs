@@ -1,4 +1,5 @@
 ﻿using Lefty.Cyan.Model;
+using Lefty.Cyan.Services;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,7 +25,7 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .MinimumLevel.Override( "Lefty.Cyan.Services", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Warning )
+            .MinimumLevel.Override( "Lefty.Cyan", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Warning )
             .WriteTo.Console()
             .CreateLogger();
 
@@ -50,6 +51,11 @@ public class Program
             x.DevopsOrganization = Environment.GetEnvironmentVariable( "CYAN_DEVOPS_ORG" ) ?? "";
         } );
         svc.AddSingleton<IValidateOptions<CyanConfiguration>, CyanConfigurationValidation>();
+
+
+        // Services
+        svc.AddTransient<RepositoryService>();
+
 
         var sp = svc.BuildServiceProvider();
 
@@ -83,6 +89,13 @@ public class Program
         catch ( UnrecognizedCommandParsingException ex )
         {
             Console.WriteLine( "err: " + ex.Message );
+
+            return 2;
+        }
+        catch ( TargetInvocationException ex ) when ( ex.InnerException is OptionsValidationException iex )
+        {
+            foreach ( var f in iex.Failures )
+                logger.Fatal( f );
 
             return 2;
         }

@@ -2,8 +2,10 @@
 /.nuget/
 /data/
 /nupkg/
+/sample/
 
 # Specific
+/src/Lefty.Cyan/*.cmd
 
 # Global ignores
 bin/

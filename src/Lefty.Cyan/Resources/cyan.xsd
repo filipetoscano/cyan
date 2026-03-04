@@ -31,6 +31,33 @@
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ~
+  ~ Company
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="company">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="name" type="xsd:string" />
+        <xsd:element name="description" type="xsd:string" />
+
+        <xsd:element name="person" type="tns:companyPerson" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:unique name="uqPersonId">
+      <xsd:selector xpath=" tns:person " />
+      <xsd:field xpath=" @id " />
+    </xsd:unique>
+
+    <xsd:unique name="uqPersonUname">
+      <xsd:selector xpath=" tns:person " />
+      <xsd:field xpath=" @username " />
+    </xsd:unique>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
   ~ Devops
   ~
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -87,6 +114,22 @@
       <xsd:selector xpath=" tns:environment " />
       <xsd:field xpath=" @name" />
     </xsd:unique>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
+  ~ Person
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="person">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="email" type="xsd:string" minOccurs="0" />
+        <xsd:element name="phone" type="xsd:string" minOccurs="0" />
+        <xsd:element name="role" type="xsd:string" minOccurs="0" />
+      </xsd:sequence>
+    </xsd:complexType>
   </xsd:element>
 
 
@@ -159,6 +202,16 @@
   ~ Complex
   ~
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:complexType name="companyPerson">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string" />
+      <xsd:element name="expires" type="xsd:date" />
+    </xsd:sequence>
+
+    <xsd:attribute name="id" type="tns:personId" use="optional" />
+    <xsd:attribute name="username" type="tns:personUsername" use="optional" />
+  </xsd:complexType>
+  
   <xsd:complexType name="dnsEnvironment">
     <xsd:sequence>
       <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />
@@ -236,6 +289,18 @@
   <xsd:simpleType name="environmentNameType">
     <xsd:restriction base="xsd:string">
       <xsd:pattern value="^[a-z]+(-[a-z]+)*$" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="personId">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="personUsername">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1" />
     </xsd:restriction>
   </xsd:simpleType>
 
