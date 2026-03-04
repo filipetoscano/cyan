@@ -11,6 +11,8 @@ namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "cyan", Description = "Azure Swiss-Knife" )]
+[Subcommand( typeof( InitCommand ) )]
+[Subcommand( typeof( PlanCommand ) )]
 [Subcommand( typeof( ValidateCommand ) )]
 [VersionOptionFromMember( MemberName = nameof( GetVersion ) )]
 public class Program
