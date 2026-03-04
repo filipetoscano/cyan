@@ -13,7 +13,7 @@ public class RepositoryService
 
 
     /// <summary />
-    public XmlNamespaceManager Manager()
+    public XmlNamespaceManager NamespaceManager()
     {
         var mgr = new XmlNamespaceManager( new NameTable() );
         mgr.AddNamespace( "c", "urn:cyan" );
