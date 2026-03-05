@@ -58,6 +58,16 @@ public class ValidateCommand
         /*
          * 
          */
+        if ( File.Exists( Path.Combine( _config.Root, "cyan.xsd" ) ) == false )
+        {
+            _logger.LogError( "Invalid root, does not contain cyan.xsd file" );
+            return 1;
+        }
+
+
+        /*
+         * 
+         */
         var azure = add( Validate( "azure", "system/azure.xml" ) );
         var devops = add( Validate( "devops", "system/devops.xml" ) );
         var dns = add( Validate( "dns", "system/dns.xml" ) );

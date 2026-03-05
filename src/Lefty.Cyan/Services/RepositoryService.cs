@@ -1,4 +1,6 @@
 ﻿using Lefty.Cyan.Model;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -7,9 +9,16 @@ namespace Lefty.Cyan.Services;
 /// <summary />
 public class RepositoryService
 {
+    private readonly CyanConfiguration _config;
+    private readonly ILogger<RepositoryService> _logger;
+
+
     /// <summary />
-    public RepositoryService()
+    public RepositoryService( IOptions<CyanConfiguration> config,
+        ILogger<RepositoryService> logger )
     {
+        _config = config.Value;
+        _logger = logger;
     }
 
 
@@ -61,6 +70,21 @@ public class RepositoryService
 
 
     /// <summary />
+    public Company Company( string companyCode, XmlDocument xml )
+    {
+        var ns = NamespaceManager();
+        var obj = new Company()
+        {
+            Code = companyCode,
+            Name = xml.SelectSingleNode( " /c:company/c:name ", ns )!.InnerText,
+            Description = xml.SelectSingleNode( " /c:company/c:description ", ns )!.InnerText,
+        };
+
+        return obj;
+    }
+
+
+    /// <summary />
     public Person Person( string companyCode, XmlDocument xml )
     {
         var ns = NamespaceManager();
@@ -76,6 +100,14 @@ public class RepositoryService
             Phone = xml.SelectSingleNode( " /c:person/c:phone ", ns )?.InnerText,
             Role = xml.SelectSingleNode( " /c:person/c:role ", ns )?.InnerText,
         };
+
+        if ( p.Username != null )
+        {
+            if ( p.Username?.Contains( "@" ) == false )
+                p.PrincipalName = p.Username + _config.EntraDomain;
+            else
+                p.PrincipalName = p.Username;
+        }
 
         return p;
     }

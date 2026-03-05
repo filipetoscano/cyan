@@ -24,7 +24,15 @@ public class PlanCommand
     /// <summary />
     public int OnExecute( CommandLineApplication app )
     {
-        // TODO
+        /*
+         * 
+         */
+        if ( File.Exists( Path.Combine( _config.Root, "cyan.xsd" ) ) == false )
+        {
+            _logger.LogError( "Invalid root, does not contain cyan.xsd file" );
+            return 1;
+        }
+
 
         return 0;
     }

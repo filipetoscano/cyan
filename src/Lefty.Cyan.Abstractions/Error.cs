@@ -1,4 +1,4 @@
-﻿namespace Lefty.Cyan.Model;
+﻿namespace Lefty.Cyan;
 
 /// <summary />
 public class Error

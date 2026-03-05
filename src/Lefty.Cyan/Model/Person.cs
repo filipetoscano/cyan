@@ -13,6 +13,9 @@ public class Person
     public string? Username { get; set; }
 
     /// <summary />
+    public string? PrincipalName { get; set; }
+
+    /// <summary />
     public required string Name { get; set; }
 
     /// <summary />

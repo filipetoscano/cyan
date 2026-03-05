@@ -50,7 +50,7 @@ public class Program
         svc.Configure<CyanConfiguration>( x =>
         {
             x.Root = Environment.GetEnvironmentVariable( "CYAN_ROOT" ) ?? Environment.CurrentDirectory;
-            x.EntraDomain = Environment.GetEnvironmentVariable( "CYAN_ENTRA" ) ?? "";
+            x.EntraDomain = Environment.GetEnvironmentVariable( "CYAN_ENTRA" )?.ToLowerInvariant() ?? "";
             x.DevopsOrganization = Environment.GetEnvironmentVariable( "CYAN_DEVOPS_ORG" ) ?? "";
         } );
         svc.AddSingleton<IValidateOptions<CyanConfiguration>, CyanConfigurationValidation>();
@@ -58,7 +58,7 @@ public class Program
 
         // Services
         svc.AddTransient<RepositoryService>();
-
+        svc.AddTransient<AzService>();
 
         var sp = svc.BuildServiceProvider();
 
