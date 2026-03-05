@@ -23,8 +23,8 @@ dotnet cyan validate
 On Linux:
 
 ```bash
-set CYAN_ENTRA=@entra.com
-set CYAN_DEVOPS_ORG=DevOpsOrganization
+export CYAN_ENTRA=@entra.com
+export CYAN_DEVOPS_ORG=DevOpsOrganization
 
 dotnet cyan validate
 ```
