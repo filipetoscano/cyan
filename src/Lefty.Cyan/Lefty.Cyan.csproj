@@ -22,8 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\cyan.xsd" />
-    <EmbeddedResource Include="Resources\cyan.xsd" />
+    <None Remove="Resources\**\*.xml" />
+    <None Remove="Resources\*.xsd" />
+    <EmbeddedResource Include="Resources\**\*.xml" />
+    <EmbeddedResource Include="Resources\*.xsd" />
   </ItemGroup>
 
   <ItemGroup>

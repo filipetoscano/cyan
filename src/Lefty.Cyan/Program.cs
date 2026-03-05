@@ -11,6 +11,7 @@ namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "cyan", Description = "Azure Swiss-Knife" )]
+[Subcommand( typeof( AddCommand ) )]
 [Subcommand( typeof( InitCommand ) )]
 [Subcommand( typeof( PlanCommand ) )]
 [Subcommand( typeof( ValidateCommand ) )]
@@ -27,7 +28,7 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .MinimumLevel.Override( "Lefty.Cyan", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Warning )
+            .MinimumLevel.Override( "Lefty.Cyan", isVerbose == true ? LogEventLevel.Debug : LogEventLevel.Information )
             .WriteTo.Console()
             .CreateLogger();
 

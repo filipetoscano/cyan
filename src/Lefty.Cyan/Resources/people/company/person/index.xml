@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<person xmlns="urn:cyan"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:cyan ../../../cyan.xsd">
+
+  <name>PLACE HOLDER</name>
+  <expires>2000-01-01</expires>
+
+</person>

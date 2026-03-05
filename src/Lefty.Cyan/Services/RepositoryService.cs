@@ -23,6 +23,18 @@ public class RepositoryService
 
 
     /// <summary />
+    public string SkeletonGet( string skel )
+    {
+        var rest = skel.Replace( "/", "." );
+
+        using var resx = typeof( Program ).Assembly.GetManifestResourceStream( $"Lefty.Cyan.Resources.{rest}" );
+        using var sr = new StreamReader( resx! );
+
+        return sr.ReadToEnd();
+    }
+
+
+    /// <summary />
     public string SchemaGet()
     {
         using var resx = typeof( Program ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Resources.cyan.xsd" );
