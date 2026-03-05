@@ -30,24 +30,26 @@ public class ValidateCommand
     /// <summary />
     public int OnExecute( CommandLineApplication app )
     {
-        var res = new List<bool>();
+        var isOk = true;
 
         var add = ( Result<XmlDocument> r ) =>
         {
-            res.Add( r.IsOk );
-
             if ( r.IsOk == false )
+            {
+                isOk = false;
                 return null;
+            }
 
             return r.Data;
         };
 
         var add2 = ( Result<bool> r ) =>
         {
-            res.Add( r.IsOk );
-
             if ( r.IsOk == false )
+            {
+                isOk = false;
                 return false;
+            }
 
             return r.Data;
         };
@@ -59,12 +61,14 @@ public class ValidateCommand
         var azure = add( Validate( "azure", "system/azure.xml" ) );
         var devops = add( Validate( "devops", "system/devops.xml" ) );
         var dns = add( Validate( "dns", "system/dns.xml" ) );
+        var jump = add( Validate( "jump", "system/jump.xml" ) );
 
 
         /*
          * 
          */
         var dir = new DirectoryInfo( Path.Combine( _config.Root, "people" ) );
+        var people = new List<Person>();
 
         foreach ( var corpDir in dir.GetDirectories() )
         {
@@ -73,7 +77,16 @@ public class ValidateCommand
             foreach ( var personDir in corpDir.GetDirectories() )
             {
                 // Person
-                add( Validate( "person", $"people/{corpDir.Name}/{personDir.Name}/index.xml" ) );
+                var pfile = $"people/{corpDir.Name}/{personDir.Name}/index.xml";
+                var pxml = add( Validate( "person", pfile ) );
+
+                if ( pxml != null )
+                {
+                    var p = _svc.Person( corpDir.Name, pxml );
+                    people.Add( p );
+
+                    add2( ValidatePerson( pfile, personDir.Name, p ) );
+                }
 
                 // Standing RBAC
                 var mainf = $"people/{corpDir.Name}/{personDir.Name}/rbac.xml";
@@ -82,8 +95,9 @@ public class ValidateCommand
                 if ( main != null )
                 {
                     add2( ValidateMainRbac( mainf, main ) );
-                    add2( ValidateDevopsRbac( mainf, main, devops ) );
                     add2( ValidateAzureRbac( mainf, main, azure ) );
+                    add2( ValidateDevopsRbac( mainf, main, devops ) );
+                    add2( ValidateJumpRbac( mainf, main, jump ) );
                 }
 
                 // Temporary RBAC
@@ -96,8 +110,9 @@ public class ValidateCommand
                         continue;
 
                     add2( ValidateTemporaryRbac( tempf, temp ) );
-                    add2( ValidateDevopsRbac( tempf, temp, devops ) );
                     add2( ValidateAzureRbac( tempf, temp, azure ) );
+                    add2( ValidateDevopsRbac( tempf, temp, devops ) );
+                    add2( ValidateJumpRbac( tempf, temp, jump ) );
                 }
             }
         }
@@ -106,10 +121,47 @@ public class ValidateCommand
         /*
          * 
          */
-        if ( res.Any( x => x == false ) == true )
+        var duplicates = people
+            .Where( p => p.Username is not null )
+            .GroupBy( p => p.Username )
+            .Where( g => g.Count() > 1 )
+            .Select( g => g.Key )
+            .ToList();
+
+        foreach ( var dupe in duplicates )
+        {
+            _logger.LogError( "Username {Username} is set for more than one person", dupe );
+
+            foreach ( var d in people.Where( x => x.Username == dupe ) )
+                _logger.LogError( "see: {CompanyCode}/{Name}", d.CompanyCode, d.Name );
+        }
+
+
+        /*
+         * 
+         */
+        if ( isOk == false )
             return 1;
 
         return 0;
+    }
+
+
+    /// <summary />
+    private Result<bool> ValidatePerson( string pfile, string name, Person p )
+    {
+        var isOk = true;
+
+        if ( p.Name != name )
+        {
+            _logger.LogError( "Person {File} has name {Actual}, expected {Expected}", pfile, p.Name, name );
+            isOk = false;
+        }
+
+        if ( isOk == false )
+            return new Result<bool>( "J001", "Main RBAC must not have window" );
+
+        return new Result<bool>( true );
     }
 
 
@@ -159,8 +211,11 @@ public class ValidateCommand
 
 
     /// <summary />
-    private Result<bool> ValidateAzureRbac( string file, XmlDocument rbac, XmlDocument azure )
+    private Result<bool> ValidateAzureRbac( string file, XmlDocument rbac, XmlDocument? azure )
     {
+        if ( azure == null )
+            return new Result<bool>( true );
+
         var mgr = _svc.NamespaceManager();
         var nodes = rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )!;
 
@@ -199,8 +254,11 @@ public class ValidateCommand
 
 
     /// <summary />
-    private Result<bool> ValidateDevopsRbac( string file, XmlDocument rbac, XmlDocument devops )
+    private Result<bool> ValidateDevopsRbac( string file, XmlDocument rbac, XmlDocument? devops )
     {
+        if ( devops == null )
+            return new Result<bool>( true );
+
         var mgr = _svc.NamespaceManager();
         var nodes = rbac.SelectNodes( " /c:rbac/c:devops/c:project ", mgr )!;
 
@@ -231,6 +289,47 @@ public class ValidateCommand
          */
         if ( ok == false )
             return new Result<bool>( "F001", "Some DevOps projects failed to match" );
+
+        return new Result<bool>( true );
+    }
+
+
+    /// <summary />
+    private Result<bool> ValidateJumpRbac( string file, XmlDocument rbac, XmlDocument? jump )
+    {
+        if ( jump == null )
+            return new Result<bool>( true );
+
+        var mgr = _svc.NamespaceManager();
+        var nodes = rbac.SelectNodes( " /c:rbac/c:jump ", mgr )!;
+
+        if ( nodes.Count == 0 )
+            return new Result<bool>( true );
+
+
+        /*
+         * 
+         */
+        var ok = true;
+
+        foreach ( XmlElement n in nodes )
+        {
+            var sn = n.Attributes[ "server" ]!.Value;
+            var mn = jump.SelectSingleNode( $" /c:jump/c:jump[ @server = '{sn}' ] ", mgr );
+
+            if ( mn != null )
+                continue;
+
+            ok = false;
+            _logger.LogError( "{File} grants access to jump server {ServerName} which is not defined", file, sn );
+        }
+
+
+        /*
+         * 
+         */
+        if ( ok == false )
+            return new Result<bool>( "J001", "Some jump servers failed to match" );
 
         return new Result<bool>( true );
     }

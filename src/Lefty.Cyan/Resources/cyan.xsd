@@ -107,6 +107,33 @@
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ~
+  ~ Jump servers
+  ~
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+  <xsd:element name="jump">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="jump" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="description" type="xsd:string" minOccurs="0" />
+            </xsd:sequence>
+
+            <xsd:attribute name="server" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:unique name="uqJumpServer">
+      <xsd:selector xpath=" tns:jump " />
+      <xsd:field xpath=" @server " />
+    </xsd:unique>
+  </xsd:element>
+
+
+  <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~
   ~ Person
   ~
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -204,7 +231,7 @@
     <xsd:attribute name="id" type="tns:personId" use="optional" />
     <xsd:attribute name="username" type="tns:personUsername" use="optional" />
   </xsd:complexType>
-  
+
   <xsd:complexType name="dnsEnvironment">
     <xsd:sequence>
       <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />

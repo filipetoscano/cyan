@@ -8,6 +8,35 @@ Lefty.Cyan
 Azure automation.
 
 
+Running
+--------------------------------------------------------------------------
+
+On Windows:
+
+```bash
+set CYAN_ENTRA=@entra.com
+set CYAN_DEVOPS_ORG=DevOpsOrganization
+
+dotnet cyan validate
+```
+
+On Linux:
+
+```bash
+set CYAN_ENTRA=@entra.com
+set CYAN_DEVOPS_ORG=DevOpsOrganization
+
+dotnet cyan validate
+```
+
+
+Pre-requisites
+--------------------------------------------------------------------------
+
+* [.NET 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+
+
+
 Installing
 --------------------------------------------------------------------------
 
