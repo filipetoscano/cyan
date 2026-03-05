@@ -74,6 +74,13 @@ public class Program
                 .UseDefaultConventions()
                 .UseConstructorInjection( sp );
         }
+        catch ( TargetInvocationException ex ) when ( ex.InnerException is OptionsValidationException iex )
+        {
+            foreach ( var f in iex.Failures )
+                logger.Fatal( f );
+
+            return 2;
+        }
         catch ( Exception ex )
         {
             logger.Fatal( ex, "Unhandled exception during setup" );
