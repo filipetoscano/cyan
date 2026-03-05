@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Lefty.Cyan.Abstractions\Lefty.Cyan.Abstractions.csproj" />
+    <ProjectReference Include="..\Lefty.Cyan.Azure\Lefty.Cyan.Azure.csproj" />
   </ItemGroup>
 
 </Project>
