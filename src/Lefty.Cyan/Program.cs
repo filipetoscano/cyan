@@ -1,4 +1,5 @@
-﻿using Lefty.Cyan.Model;
+﻿using Lefty.Cyan.Azure;
+using Lefty.Cyan.Model;
 using Lefty.Cyan.Services;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "cyan", Description = "Azure Swiss-Knife" )]
+[Subcommand( typeof( AccountCommand ) )]
 [Subcommand( typeof( AddCommand ) )]
 [Subcommand( typeof( InitCommand ) )]
 [Subcommand( typeof( PlanCommand ) )]
@@ -54,7 +56,6 @@ public class Program
             x.DevopsOrganization = Environment.GetEnvironmentVariable( "CYAN_DEVOPS_ORG" ) ?? "";
         } );
         svc.AddSingleton<IValidateOptions<CyanConfiguration>, CyanConfigurationValidation>();
-
 
         // Services
         svc.AddTransient<RepositoryService>();
