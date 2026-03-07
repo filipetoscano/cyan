@@ -40,9 +40,38 @@ public class AddPersonCommand
     /// <summary />
     public int OnExecute( CommandLineApplication app )
     {
+        /*
+         * 
+         */
+        var corpDir = Path.Combine( _config.Root, $"people/{this.CompanyCode}" );
+
+        if ( Directory.Exists( corpDir ) == false )
+        {
+            _logger.LogError( "Company {CompanyCode} does not exist", this.CompanyCode );
+            return 1;
+        }
+
+
+        /*
+         * 
+         */
         var xml1 = _svc.SkeletonGet( "people/company/person/index.xml" );
         var xml2 = _svc.SkeletonGet( "people/company/person/rbac.xml" );
 
+
+        /*
+         * 
+         */
+        var expiration = new DateOnly( DateTime.Today.Year, 12, 31 );
+
+        xml1 = xml1
+            .Replace( "{PersonName}", this.PersonName )
+            .Replace( "{Expiration}", expiration.ToString( "yyyy-MM-dd" ) );
+
+
+        /*
+         * 
+         */
         var file1 = $"people/{this.CompanyCode}/{this.PersonName}/index.xml";
         var file2 = $"people/{this.CompanyCode}/{this.PersonName}/rbac.xml";
 
@@ -54,11 +83,18 @@ public class AddPersonCommand
          * 
          */
         Directory.CreateDirectory( Path.GetDirectoryName( path1 )! );
-        File.WriteAllText( path1, xml1 );
-        File.WriteAllText( path2, xml2 );
 
-        _logger.LogInformation( "Person file {File} created", file1 );
-        _logger.LogInformation( "RBAC file {File} created", file2 );
+        if ( File.Exists( path1 ) == false )
+        {
+            File.WriteAllText( path1, xml1 );
+            _logger.LogInformation( "Person file {File} created", file1 );
+        }
+
+        if ( File.Exists( path2 ) == false )
+        {
+            File.WriteAllText( path2, xml2 );
+            _logger.LogInformation( "RBAC file {File} created", file2 );
+        }
 
         return 0;
     }
