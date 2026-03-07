@@ -32,19 +32,36 @@ public partial class AzService
 
         _logger.LogInformation( "az {Args}", string.Join( " ", args ) );
 
-        await Cli
+        var cmd = await Cli
             .Wrap( "az" )
             .WithArguments( ( a ) =>
             {
                 a.Add( args );
             } )
             .WithStandardOutputPipe( PipeTarget.ToStringBuilder( stdout ) )
+            .WithStandardErrorPipe( PipeTarget.ToStringBuilder( stdout ) )
+            .WithValidation( CommandResultValidation.None )
             .ExecuteAsync();
 
-        var json = stdout.ToString();
-        _logger.LogDebug( "{Json}", json );
 
-        return JsonSerializer.Deserialize<T>( json )!;
+        /*
+         * 
+         */
+        var output = stdout.ToString();
+
+        if ( cmd.IsSuccess == false )
+        {
+            _logger.LogError( output );
+            throw new ApplicationException();
+        }
+
+
+        /*
+         * 
+         */
+        _logger.LogDebug( "{Json}", output );
+
+        return JsonSerializer.Deserialize<T>( output )!;
     }
 
 
