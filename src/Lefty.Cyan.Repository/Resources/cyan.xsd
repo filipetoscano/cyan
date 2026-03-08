@@ -55,6 +55,8 @@
         <xsd:element name="project" minOccurs="0" maxOccurs="unbounded">
           <xsd:complexType>
             <xsd:sequence>
+              <xsd:element name="description" type="xsd:string" minOccurs="0" />
+
               <xsd:element name="repository" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                   <xsd:attribute name="name" type="xsd:string" use="required" />

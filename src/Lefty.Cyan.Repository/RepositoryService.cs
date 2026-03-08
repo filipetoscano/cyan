@@ -7,9 +7,10 @@ using System.Xml.Schema;
 namespace Lefty.Cyan.Repository;
 
 /// <summary />
-public class RepositoryService
+public partial class RepositoryService
 {
     private readonly CyanConfiguration _config;
+    private readonly XmlNamespaceManager _mgr;
     private readonly ILogger<RepositoryService> _logger;
 
 
@@ -19,16 +20,18 @@ public class RepositoryService
     {
         _config = config.Value;
         _logger = logger;
+
+        var mgr = new XmlNamespaceManager( new NameTable() );
+        mgr.AddNamespace( "c", "urn:cyan" );
+
+        _mgr = mgr;
     }
 
 
     /// <summary />
     public XmlNamespaceManager NamespaceManager()
     {
-        var mgr = new XmlNamespaceManager( new NameTable() );
-        mgr.AddNamespace( "c", "urn:cyan" );
-
-        return mgr;
+        return _mgr;
     }
 
 

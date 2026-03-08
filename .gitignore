@@ -6,6 +6,7 @@
 
 # Specific
 /src/Lefty.Cyan/*.cmd
+/src/Lefty.Cyan/*.sh
 
 # Global ignores
 bin/

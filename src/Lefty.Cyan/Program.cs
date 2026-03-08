@@ -13,6 +13,7 @@ namespace Lefty.Cyan;
 [Command( "cyan", Description = "Azure Swiss-Knife" )]
 [Subcommand( typeof( AccountCommand ) )]
 [Subcommand( typeof( AddCommand ) )]
+[Subcommand( typeof( DocsCommand ) )]
 [Subcommand( typeof( InitCommand ) )]
 [Subcommand( typeof( PlanCommand ) )]
 [Subcommand( typeof( ValidateCommand ) )]
