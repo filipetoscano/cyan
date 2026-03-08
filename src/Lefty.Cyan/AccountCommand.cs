@@ -26,8 +26,18 @@ public class AccountCommand
     {
         var acc = await _svc.AccountGetAsync();
 
-        _logger.LogInformation( "Tenant = {Tenant}", acc.TenantDisplayName );
-        _logger.LogInformation( "User = {UserName}", acc.User?.Name );
+        _logger.LogInformation( "Subscription = {Name} ({SubscriptionId})", acc.SubscriptionName, acc.SubscriptionId );
+
+        if ( acc.TenantDisplayName != null )
+            _logger.LogInformation( "Tenant = {Tenant} ({Domain})", acc.TenantDisplayName, acc.TenantDomainName );
+
+        if ( acc.User != null )
+        {
+            if ( acc.User.Type == "userPrincipal" )
+                _logger.LogInformation( "Principal = {UserPrincipal}", acc.User.Name );
+            else
+                _logger.LogInformation( "User = {UserName}", acc.User.Name );
+        }
 
         return 0;
     }

@@ -9,8 +9,20 @@ namespace Lefty.Cyan.Azure.Account;
 public class AzAccount
 {
     /// <summary />
+    [JsonPropertyName( "id" )]
+    public required Guid SubscriptionId { get; set; }
+
+    /// <summary />
+    [JsonPropertyName( "name" )]
+    public required string SubscriptionName { get; set; }
+
+    /// <summary />
     [JsonPropertyName( "tenantDisplayName" )]
-    public required string TenantDisplayName { get; set; }
+    public string? TenantDisplayName { get; set; }
+
+    /// <summary />
+    [JsonPropertyName( "tenantDomainName" )]
+    public string? TenantDomainName { get; set; }
 
     /// <summary />
     [JsonPropertyName( "tenantId" )]
