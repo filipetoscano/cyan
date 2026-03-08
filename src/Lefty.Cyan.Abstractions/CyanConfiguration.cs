@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Lefty.Cyan.Model;
+namespace Lefty.Cyan;
 
 /// <summary />
 public class CyanConfiguration

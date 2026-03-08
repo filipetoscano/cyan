@@ -1,4 +1,4 @@
-﻿namespace Lefty.Cyan.Model;
+﻿namespace Lefty.Cyan.Repository.Model;
 
 /// <summary />
 public class Company

@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 
-namespace Lefty.Cyan.Model;
+namespace Lefty.Cyan.Repository.Model;
 
 public class Repository
 {

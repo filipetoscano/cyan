@@ -1,5 +1,4 @@
-﻿using Lefty.Cyan.Model;
-using Lefty.Cyan.Services;
+﻿using Lefty.Cyan.Repository;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,6 +1,5 @@
 ﻿using Lefty.Cyan.Azure;
-using Lefty.Cyan.Model;
-using Lefty.Cyan.Services;
+using Lefty.Cyan.Repository;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

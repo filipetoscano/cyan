@@ -1,5 +1,5 @@
-﻿using Lefty.Cyan.Model;
-using Lefty.Cyan.Services;
+﻿using Lefty.Cyan.Repository;
+using Lefty.Cyan.Repository.Model;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -49,6 +49,17 @@ public class ValidateCommand
             {
                 isOk = false;
                 return false;
+            }
+
+            return r.Data;
+        };
+
+        var add3 = ( Result<RbacWindow> r ) =>
+        {
+            if ( r.IsOk == false )
+            {
+                isOk = false;
+                return null;
             }
 
             return r.Data;
@@ -119,7 +130,14 @@ public class ValidateCommand
                     if ( temp == null )
                         continue;
 
-                    add2( ValidateTemporaryRbac( tempf, temp ) );
+                    var w = add3( ValidateTemporaryRbac( tempf, temp ) );
+
+                    if ( w.IsPast == true )
+                    {
+                        _logger.LogDebug( "{File}: Skip cross-checks for past windows", tempf );
+                        continue;
+                    }
+
                     add2( ValidateAzureRbac( tempf, temp, azure ) );
                     add2( ValidateDevopsRbac( tempf, temp, devops ) );
                     add2( ValidateJumpRbac( tempf, temp, jump ) );
@@ -192,7 +210,7 @@ public class ValidateCommand
 
 
     /// <summary />
-    private Result<bool> ValidateTemporaryRbac( string file, XmlDocument rbac )
+    private Result<RbacWindow> ValidateTemporaryRbac( string file, XmlDocument rbac )
     {
         var mgr = _svc.NamespaceManager();
         var node = (XmlElement) rbac.SelectSingleNode( " /c:rbac/c:window ", mgr )!;
@@ -200,7 +218,7 @@ public class ValidateCommand
         if ( node == null )
         {
             _logger.LogError( "{File} is missing <window />, which is required for temporary RBAC", file );
-            return new Result<bool>( "G002", "Temporary RBAC must have window" );
+            return new Result<RbacWindow>( "G002", "Temporary RBAC must have window" );
         }
 
 
@@ -213,10 +231,14 @@ public class ValidateCommand
         if ( from > to )
         {
             _logger.LogError( "{File} has invalid <window />: @from is after @to", file );
-            return new Result<bool>( "G003", "Invalid window range" );
+            return new Result<RbacWindow>( "G003", "Invalid window range" );
         }
 
-        return new Result<bool>( true );
+        return new Result<RbacWindow>( new RbacWindow()
+        {
+            From = from,
+            To = to,
+        } );
     }
 
 
@@ -349,11 +371,11 @@ public class ValidateCommand
     private Result<XmlDocument> Validate( string rootElement, string file )
     {
         var path = Path.Combine( _config.Root, file );
-        _logger.LogDebug( "Check {File}", file );
+        _logger.LogDebug( "{File}: Validate", file );
 
         if ( File.Exists( path ) == false )
         {
-            _logger.LogError( "File {File} is missing", file );
+            _logger.LogError( "{File}: Required file is missing", file );
             return new Result<XmlDocument>( "E001", $"File {file} is missing" );
         }
 
@@ -369,7 +391,7 @@ public class ValidateCommand
         }
         catch ( Exception ex )
         {
-            _logger.LogError( ex, "Failed to load XML {File}", file );
+            _logger.LogError( ex, "{File}: Failed to load XML", file );
             return new Result<XmlDocument>( "E002", $"File {file} failed to load" );
         }
 
@@ -389,7 +411,7 @@ public class ValidateCommand
         if ( errors.Count > 0 )
         {
             foreach ( var error in errors )
-                _logger.LogError( "{File} xsd: {Error}", file, error );
+                _logger.LogError( "{File}: xsd: {Error}", file, error );
 
             return new Result<XmlDocument>( "E003", $"File {file} failed schema validation" );
         }
@@ -400,13 +422,13 @@ public class ValidateCommand
          */
         if ( xml.DocumentElement == null )
         {
-            _logger.LogError( "Xml {File} has no document element", file );
+            _logger.LogError( "{File}: Xml has no document element", file );
             return new Result<XmlDocument>( "E004", $"Xml {file} has no document element" );
         }
 
         if ( xml.DocumentElement.NamespaceURI != "urn:cyan" )
         {
-            _logger.LogError( "Xml {File} has invalid namespace {Actual}, expected {Expected}",
+            _logger.LogError( "{File}: Xml has invalid namespace {Actual}, expected {Expected}",
                 file, xml.DocumentElement.NamespaceURI, "urn:cyan" );
 
             return new Result<XmlDocument>( "E005", $"Xml {file} has invalid namespace" );
@@ -414,7 +436,7 @@ public class ValidateCommand
 
         if ( xml.DocumentElement?.LocalName != rootElement )
         {
-            _logger.LogError( "File {File} has invalid root {Actual}, expected {Expected}",
+            _logger.LogError( "{File}: File has invalid root {Actual}, expected {Expected}",
                 file, xml.DocumentElement?.LocalName, rootElement );
 
             return new Result<XmlDocument>( "E006", $"File {file} has incorrect root element" );

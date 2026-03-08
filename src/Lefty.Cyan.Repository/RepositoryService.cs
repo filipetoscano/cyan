@@ -1,10 +1,10 @@
-﻿using Lefty.Cyan.Model;
+﻿using Lefty.Cyan.Repository.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Xml;
 using System.Xml.Schema;
 
-namespace Lefty.Cyan.Services;
+namespace Lefty.Cyan.Repository;
 
 /// <summary />
 public class RepositoryService
@@ -37,7 +37,7 @@ public class RepositoryService
     {
         var rest = skel.Replace( "/", "." );
 
-        using var resx = typeof( Program ).Assembly.GetManifestResourceStream( $"Lefty.Cyan.Resources.{rest}" );
+        using var resx = typeof( RepositoryService ).Assembly.GetManifestResourceStream( $"Lefty.Cyan.Repository.Resources.{rest}" );
         using var sr = new StreamReader( resx! );
 
         return sr.ReadToEnd();
@@ -47,7 +47,7 @@ public class RepositoryService
     /// <summary />
     public string SchemaGet()
     {
-        using var resx = typeof( Program ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Resources.cyan.xsd" );
+        using var resx = typeof( RepositoryService ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Repository.Resources.cyan.xsd" );
         using var sr = new StreamReader( resx! );
 
         return sr.ReadToEnd();
@@ -57,7 +57,7 @@ public class RepositoryService
     /// <summary />
     public XmlSchemaSet SchemaSetGet()
     {
-        using var resx = typeof( Program ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Resources.cyan.xsd" );
+        using var resx = typeof( RepositoryService ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Repository.Resources.cyan.xsd" );
         using var reader = XmlReader.Create( resx! );
 
         var xsd = XmlSchema.Read( reader, null )!;
