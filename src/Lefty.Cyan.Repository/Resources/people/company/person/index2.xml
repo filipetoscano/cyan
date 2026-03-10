@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<person xmlns="urn:cyan"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:cyan ../../../cyan.xsd">
+
+  <username>{Username}</username>
+  <name>{PersonName}</name>
+  <expires>{Expiration}</expires>
+
+</person>

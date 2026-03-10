@@ -7,6 +7,7 @@ namespace Lefty.Cyan;
 /// <summary />
 [Command( "add", Description = "Adds a company or person" )]
 [Subcommand( typeof( AddCompanyCommand ) )]
+[Subcommand( typeof( AddFromCommand ) )]
 [Subcommand( typeof( AddPersonCommand ) )]
 public class AddCommand
 {
