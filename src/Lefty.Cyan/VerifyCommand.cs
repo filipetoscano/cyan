@@ -55,7 +55,7 @@ public class VerifyCommand
                 if ( pdoc.IsOk == false )
                     continue;
 
-                var p = _repo.Person( corpDir.Name, pdoc.Data );
+                var p = _repo.ToPerson( corpDir.Name, pdoc.Data );
                 people.Add( p );
             }
         }

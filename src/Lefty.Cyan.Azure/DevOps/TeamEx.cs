@@ -3,7 +3,7 @@
 namespace Lefty.Cyan.Azure.DevOps;
 
 /// <summary />
-public class TeamEx
+internal class TeamEx
 {
     /// <summary />
     [JsonPropertyName( "name" )]

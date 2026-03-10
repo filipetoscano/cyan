@@ -8,10 +8,8 @@ public partial class RepositoryService
     /// <summary />
     public Devops DevopsGet()
     {
-        var path = Path.Combine( _config.Root, "system/devops.xml" );
-
-        var xml = new XmlDocument();
-        xml.Load( path );
+        var res = Validate( "devops", "system/devops.xml" );
+        var xml = res.Data;
 
         var obj = new Devops()
         {

@@ -12,7 +12,7 @@ namespace Lefty.Cyan;
 public class ValidateCommand
 {
     private readonly CyanConfiguration _config;
-    private readonly RepositoryService _svc;
+    private readonly RepositoryService _repo;
     private readonly ILogger<ValidateCommand> _logger;
 
 
@@ -22,7 +22,7 @@ public class ValidateCommand
         ILogger<ValidateCommand> logger )
     {
         _config = config.Value;
-        _svc = svc;
+        _repo = svc;
         _logger = logger;
     }
 
@@ -79,10 +79,10 @@ public class ValidateCommand
         /*
          * 
          */
-        var azure = add( Validate( "azure", "system/azure.xml" ) );
-        var devops = add( Validate( "devops", "system/devops.xml" ) );
-        var dns = add( Validate( "dns", "system/dns.xml" ) );
-        var jump = add( Validate( "jump", "system/jump.xml" ) );
+        var azure = add( _repo.Azure() );
+        var devops = add( _repo.Devops() );
+        var dns = add( _repo.Dns() );
+        var jump = add( _repo.Jump() );
 
 
         /*
@@ -93,17 +93,17 @@ public class ValidateCommand
 
         foreach ( var corpDir in dir.GetDirectories() )
         {
-            var corp = add( Validate( "company", $"people/{corpDir.Name}/index.xml" ) );
+            var corp = add( _repo.Company( corpDir.Name ) );
 
             foreach ( var personDir in corpDir.GetDirectories() )
             {
                 // Person
                 var pfile = $"people/{corpDir.Name}/{personDir.Name}/index.xml";
-                var pxml = add( Validate( "person", pfile ) );
+                var pxml = add( _repo.Person( corpDir.Name, personDir.Name ) );
 
                 if ( pxml != null )
                 {
-                    var p = _svc.Person( corpDir.Name, pxml );
+                    var p = _repo.ToPerson( corpDir.Name, pxml );
                     people.Add( p );
 
                     add2( ValidatePerson( pfile, personDir.Name, p ) );
@@ -111,7 +111,7 @@ public class ValidateCommand
 
                 // Standing RBAC
                 var mainf = $"people/{corpDir.Name}/{personDir.Name}/rbac.xml";
-                var main = add( Validate( "rbac", mainf ) );
+                var main = add( _repo.PersonRbac( corpDir.Name, personDir.Name ) );
 
                 if ( main != null )
                 {
@@ -125,7 +125,7 @@ public class ValidateCommand
                 foreach ( var x in personDir.GetFiles( "rbac-*.xml" ) )
                 {
                     var tempf = $"people/{corpDir.Name}/{personDir.Name}/{x.Name}";
-                    var temp = add( Validate( "rbac", tempf ) );
+                    var temp = add( _repo.PersonRbac( corpDir.Name, personDir.Name, Path.GetFileNameWithoutExtension( x.Name ) ) );
 
                     if ( temp == null )
                         continue;
@@ -190,7 +190,7 @@ public class ValidateCommand
     /// <summary />
     private Result<bool> ValidateMainRbac( string file, XmlDocument rbac )
     {
-        var mgr = _svc.NamespaceManager();
+        var mgr = _repo.NamespaceManager();
         var node = rbac.SelectSingleNode( " /c:rbac/c:window ", mgr )!;
 
         if ( node != null )
@@ -206,7 +206,7 @@ public class ValidateCommand
     /// <summary />
     private Result<RbacWindow> ValidateTemporaryRbac( string file, XmlDocument rbac )
     {
-        var mgr = _svc.NamespaceManager();
+        var mgr = _repo.NamespaceManager();
         var node = (XmlElement) rbac.SelectSingleNode( " /c:rbac/c:window ", mgr )!;
 
         if ( node == null )
@@ -242,7 +242,7 @@ public class ValidateCommand
         if ( azure == null )
             return new Result<bool>( true );
 
-        var mgr = _svc.NamespaceManager();
+        var mgr = _repo.NamespaceManager();
         var nodes = rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )!;
 
         if ( nodes.Count == 0 )
@@ -285,7 +285,7 @@ public class ValidateCommand
         if ( devops == null )
             return new Result<bool>( true );
 
-        var mgr = _svc.NamespaceManager();
+        var mgr = _repo.NamespaceManager();
         var nodes = rbac.SelectNodes( " /c:rbac/c:devops/c:project ", mgr )!;
 
         if ( nodes.Count == 0 )
@@ -326,7 +326,7 @@ public class ValidateCommand
         if ( jump == null )
             return new Result<bool>( true );
 
-        var mgr = _svc.NamespaceManager();
+        var mgr = _repo.NamespaceManager();
         var nodes = rbac.SelectNodes( " /c:rbac/c:jump ", mgr )!;
 
         if ( nodes.Count == 0 )
@@ -358,84 +358,5 @@ public class ValidateCommand
             return new Result<bool>( "J001", "Some jump servers failed to match" );
 
         return new Result<bool>( true );
-    }
-
-
-    /// <summary />
-    private Result<XmlDocument> Validate( string rootElement, string file )
-    {
-        var path = Path.Combine( _config.Root, file );
-        _logger.LogDebug( "{File}: Validate", file );
-
-        if ( File.Exists( path ) == false )
-        {
-            _logger.LogError( "{File}: Required file is missing", file );
-            return new Result<XmlDocument>( "E001", $"File {file} is missing" );
-        }
-
-
-        /*
-         * 
-         */
-        var xml = new XmlDocument();
-
-        try
-        {
-            xml.Load( path );
-        }
-        catch ( Exception ex )
-        {
-            _logger.LogError( ex, "{File}: Failed to load XML", file );
-            return new Result<XmlDocument>( "E002", $"File {file} failed to load" );
-        }
-
-
-        /*
-         * Validate against schema
-         */
-        xml.Schemas = _svc.SchemaSetGet();
-
-        var errors = new List<string>();
-
-        xml.Validate( ( sender, e ) =>
-        {
-            errors.Add( e.Message );
-        } );
-
-        if ( errors.Count > 0 )
-        {
-            foreach ( var error in errors )
-                _logger.LogError( "{File}: xsd: {Error}", file, error );
-
-            return new Result<XmlDocument>( "E003", $"File {file} failed schema validation" );
-        }
-
-
-        /*
-         * Check root element
-         */
-        if ( xml.DocumentElement == null )
-        {
-            _logger.LogError( "{File}: Xml has no document element", file );
-            return new Result<XmlDocument>( "E004", $"Xml {file} has no document element" );
-        }
-
-        if ( xml.DocumentElement.NamespaceURI != "urn:cyan" )
-        {
-            _logger.LogError( "{File}: Xml has invalid namespace {Actual}, expected {Expected}",
-                file, xml.DocumentElement.NamespaceURI, "urn:cyan" );
-
-            return new Result<XmlDocument>( "E005", $"Xml {file} has invalid namespace" );
-        }
-
-        if ( xml.DocumentElement?.LocalName != rootElement )
-        {
-            _logger.LogError( "{File}: File has invalid root {Actual}, expected {Expected}",
-                file, xml.DocumentElement?.LocalName, rootElement );
-
-            return new Result<XmlDocument>( "E006", $"File {file} has incorrect root element" );
-        }
-
-        return new Result<XmlDocument>( xml );
     }
 }

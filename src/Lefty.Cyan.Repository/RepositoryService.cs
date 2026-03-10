@@ -58,7 +58,7 @@ public partial class RepositoryService
 
 
     /// <summary />
-    public XmlSchemaSet SchemaSetGet()
+    private XmlSchemaSet SchemaSetGet()
     {
         using var resx = typeof( RepositoryService ).Assembly.GetManifestResourceStream( "Lefty.Cyan.Repository.Resources.cyan.xsd" );
         using var reader = XmlReader.Create( resx! );
@@ -73,7 +73,86 @@ public partial class RepositoryService
 
 
     /// <summary />
-    public Company Company( string companyCode, XmlDocument xml )
+    private Result<XmlDocument> Validate( string rootElement, string file )
+    {
+        var path = Path.Combine( _config.Root, file );
+        _logger.LogDebug( "{File}: Validate", file );
+
+        if ( File.Exists( path ) == false )
+        {
+            _logger.LogError( "{File}: Required file is missing", file );
+            return new Result<XmlDocument>( "E001", $"File {file} is missing" );
+        }
+
+
+        /*
+         * 
+         */
+        var xml = new XmlDocument();
+
+        try
+        {
+            xml.Load( path );
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError( ex, "{File}: Failed to load XML", file );
+            return new Result<XmlDocument>( "E002", $"File {file} failed to load" );
+        }
+
+
+        /*
+         * Validate against schema
+         */
+        xml.Schemas = SchemaSetGet();
+
+        var errors = new List<string>();
+
+        xml.Validate( ( sender, e ) =>
+        {
+            errors.Add( e.Message );
+        } );
+
+        if ( errors.Count > 0 )
+        {
+            foreach ( var error in errors )
+                _logger.LogError( "{File}: xsd: {Error}", file, error );
+
+            return new Result<XmlDocument>( "E003", $"File {file} failed schema validation" );
+        }
+
+
+        /*
+         * Check root element
+         */
+        if ( xml.DocumentElement == null )
+        {
+            _logger.LogError( "{File}: Xml has no document element", file );
+            return new Result<XmlDocument>( "E004", $"Xml {file} has no document element" );
+        }
+
+        if ( xml.DocumentElement.NamespaceURI != "urn:cyan" )
+        {
+            _logger.LogError( "{File}: Xml has invalid namespace {Actual}, expected {Expected}",
+                file, xml.DocumentElement.NamespaceURI, "urn:cyan" );
+
+            return new Result<XmlDocument>( "E005", $"Xml {file} has invalid namespace" );
+        }
+
+        if ( xml.DocumentElement?.LocalName != rootElement )
+        {
+            _logger.LogError( "{File}: File has invalid root {Actual}, expected {Expected}",
+                file, xml.DocumentElement?.LocalName, rootElement );
+
+            return new Result<XmlDocument>( "E006", $"File {file} has incorrect root element" );
+        }
+
+        return new Result<XmlDocument>( xml );
+    }
+
+
+    /// <summary />
+    public Company ToCompany( string companyCode, XmlDocument xml )
     {
         var ns = NamespaceManager();
         var obj = new Company()
@@ -88,7 +167,7 @@ public partial class RepositoryService
 
 
     /// <summary />
-    public Person Person( string companyCode, XmlDocument xml )
+    public Person ToPerson( string companyCode, XmlDocument xml )
     {
         var ns = NamespaceManager();
         var p = new Person()

@@ -1,4 +1,6 @@
-﻿namespace Lefty.Cyan.Repository.Model;
+﻿using System.Text.Json.Serialization;
+
+namespace Lefty.Cyan.Repository.Model;
 
 /// <summary />
 public class Company
@@ -14,5 +16,6 @@ public class Company
 
 
     /// <summary />
+    [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
     public List<Person>? Persons { get; set; }
 }
