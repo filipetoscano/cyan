@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 
-namespace Lefty.Cyan;
+namespace Lefty.Cyan.Add;
 
 /// <summary />
 [Command( "company", Description = "Adds a company" )]

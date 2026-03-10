@@ -1,25 +1,17 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "add", Description = "Adds a company or person" )]
-[Subcommand( typeof( AddCompanyCommand ) )]
-[Subcommand( typeof( AddFromCommand ) )]
-[Subcommand( typeof( AddPersonCommand ) )]
+[Subcommand( typeof( Add.AddCompanyCommand ) )]
+[Subcommand( typeof( Add.AddFromCommand ) )]
+[Subcommand( typeof( Add.AddPersonCommand ) )]
 public class AddCommand
 {
-    private readonly CyanConfiguration _config;
-    private readonly ILogger<AddCommand> _logger;
-
     /// <summary />
-    public AddCommand( IOptions<CyanConfiguration> config,
-        ILogger<AddCommand> logger )
+    public AddCommand()
     {
-        _config = config.Value;
-        _logger = logger;
     }
 
 
