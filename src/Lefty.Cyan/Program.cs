@@ -16,6 +16,7 @@ namespace Lefty.Cyan;
 [Subcommand( typeof( DocsCommand ) )]
 [Subcommand( typeof( InitCommand ) )]
 [Subcommand( typeof( PlanCommand ) )]
+[Subcommand( typeof( RepoCommand ) )]
 [Subcommand( typeof( SetupCommand ) )]
 [Subcommand( typeof( ValidateCommand ) )]
 [Subcommand( typeof( VerifyCommand ) )]

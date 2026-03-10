@@ -19,7 +19,7 @@ public class Person
     public required string Name { get; set; }
 
     /// <summary />
-    public required DateOnly Expires { get; set; }
+    public required DateOnly DateExpiry { get; set; }
 
     /// <summary />
     public required bool IsEnabled { get; set; }

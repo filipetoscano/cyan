@@ -176,7 +176,7 @@ public partial class RepositoryService
             Id = xml.SelectSingleNode( " /c:person/c:id ", ns )?.InnerText,
             Username = xml.SelectSingleNode( " /c:person/c:username ", ns )?.InnerText,
             Name = xml.SelectSingleNode( " /c:person/c:name ", ns )!.InnerText,
-            Expires = DateOnly.ParseExact( xml.SelectSingleNode( " /c:person/c:expires ", ns )!.InnerText, "yyyy-MM-dd" ),
+            DateExpiry = DateOnly.ParseExact( xml.SelectSingleNode( " /c:person/c:expires ", ns )!.InnerText, "yyyy-MM-dd" ),
             IsEnabled = bool.Parse( xml.SelectSingleNode( " /c:person/c:enabled ", ns )?.InnerText ?? "true" ),
 
             Email = xml.SelectSingleNode( " /c:person/c:email ", ns )?.InnerText,
