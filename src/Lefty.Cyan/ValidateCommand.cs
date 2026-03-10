@@ -180,14 +180,8 @@ public class ValidateCommand
     {
         var isOk = true;
 
-        if ( p.Name != name )
-        {
-            _logger.LogError( "Person {File} has name {Actual}, expected {Expected}", pfile, p.Name, name );
-            isOk = false;
-        }
-
         if ( isOk == false )
-            return new Result<bool>( "J001", "Main RBAC must not have window" );
+            return new Result<bool>( "J001", "Person is invalid" );
 
         return new Result<bool>( true );
     }

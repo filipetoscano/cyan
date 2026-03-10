@@ -98,6 +98,7 @@ public partial class RepositoryService
             Username = xml.SelectSingleNode( " /c:person/c:username ", ns )?.InnerText,
             Name = xml.SelectSingleNode( " /c:person/c:name ", ns )!.InnerText,
             Expires = DateOnly.ParseExact( xml.SelectSingleNode( " /c:person/c:expires ", ns )!.InnerText, "yyyy-MM-dd" ),
+            IsEnabled = bool.Parse( xml.SelectSingleNode( " /c:person/c:enabled ", ns )?.InnerText ?? "true" ),
 
             Email = xml.SelectSingleNode( " /c:person/c:email ", ns )?.InnerText,
             Phone = xml.SelectSingleNode( " /c:person/c:phone ", ns )?.InnerText,

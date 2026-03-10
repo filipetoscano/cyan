@@ -22,6 +22,9 @@ public class Person
     public required DateOnly Expires { get; set; }
 
     /// <summary />
+    public required bool IsEnabled { get; set; }
+
+    /// <summary />
     public string? Email { get; set; }
 
     /// <summary />

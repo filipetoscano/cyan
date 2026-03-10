@@ -50,8 +50,15 @@ public partial class AzService
 
         if ( cmd.IsSuccess == false )
         {
-            _logger.LogError( output );
-            throw new ApplicationException();
+            _logger.LogError( "{ExitCode}: {Output}", cmd.ExitCode, output );
+
+            if ( cmd.ExitCode == 3 )
+                throw new AzNotFoundException( output );
+
+            if ( cmd.ExitCode == 2 )
+                throw new AzBadRequestException( output );
+
+            throw new AzGenericException( output );
         }
 
 

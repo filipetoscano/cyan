@@ -146,6 +146,7 @@
         <xsd:element name="username" type="xsd:string" minOccurs="0" />
         <xsd:element name="name" type="xsd:string" />
         <xsd:element name="expires" type="xsd:date" />
+        <xsd:element name="enabled" type="xsd:boolean" minOccurs="0" />
 
         <xsd:element name="email" type="xsd:string" minOccurs="0" />
         <xsd:element name="phone" type="xsd:string" minOccurs="0" />

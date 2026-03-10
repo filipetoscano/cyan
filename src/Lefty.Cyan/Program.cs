@@ -18,6 +18,7 @@ namespace Lefty.Cyan;
 [Subcommand( typeof( PlanCommand ) )]
 [Subcommand( typeof( SetupCommand ) )]
 [Subcommand( typeof( ValidateCommand ) )]
+[Subcommand( typeof( VerifyCommand ) )]
 [VersionOptionFromMember( MemberName = nameof( GetVersion ) )]
 public class Program
 {
