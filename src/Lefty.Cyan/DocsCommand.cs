@@ -51,8 +51,10 @@ public class DocsCommand
 
         sb.AppendLine();
 
+        var dname = Path.Combine( _config.Root, "docs" );
+        var fname = Path.Combine( dname, "People.md" );
 
-        var fname = Path.Combine( _config.Root, "docs", "People.md" );
+        Directory.CreateDirectory( dname );
         File.WriteAllText( fname, sb.ToString() );
 
         return 0;
