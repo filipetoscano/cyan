@@ -228,6 +228,7 @@
     <xsd:key name="uqAzureResx">
       <xsd:selector xpath=" tns:azure/tns:* " />
       <xsd:field xpath=" @name " />
+      <xsd:field xpath=" @role " />
     </xsd:key>
   </xsd:element>
 
