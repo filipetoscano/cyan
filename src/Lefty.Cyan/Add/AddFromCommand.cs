@@ -49,6 +49,13 @@ public class AddFromCommand
          */
         var uname = this.Username!.ToLowerInvariant();
         var ix = uname.IndexOf( '-' );
+
+        if ( ix < 0 )
+        {
+            _logger.LogError( "Dash in username '{Username}' is missing", uname );
+            return 1;
+        }
+
         var companyCode = uname.Substring( 0, ix );
 
 
