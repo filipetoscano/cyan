@@ -17,7 +17,7 @@ public partial class RepositoryService
             Projects = new List<Project>(),
         };
 
-        foreach ( XmlElement projectElem in xml.SelectNodes( " /c:devops/c:project ", _mgr )! )
+        foreach ( var projectElem in xml.SelectNodes( " /c:devops/c:project ", _mgr )!.OfType<XmlElement>() )
         {
             var p = new Project()
             {
@@ -28,17 +28,17 @@ public partial class RepositoryService
                 Repositories = new List<ProjectRepository>(),
             };
 
-            foreach ( XmlElement elem in projectElem.SelectNodes( " c:group ", _mgr )! )
+            foreach ( var elem in projectElem.SelectNodes( " c:group ", _mgr )!.OfType<XmlElement>() )
             {
                 p.Groups.Add( elem.Attributes[ "name" ]!.Value );
             }
 
-            foreach ( XmlElement elem in projectElem.SelectNodes( " c:team ", _mgr )! )
+            foreach ( var elem in projectElem.SelectNodes( " c:team ", _mgr )!.OfType<XmlElement>() )
             {
                 p.Teams.Add( elem.Attributes[ "name" ]!.Value );
             }
 
-            foreach ( XmlElement elem in projectElem.SelectNodes( " c:repository ", _mgr )! )
+            foreach ( var elem in projectElem.SelectNodes( " c:repository ", _mgr )!.OfType<XmlElement>() )
             {
                 p.Repositories.Add( new ProjectRepository()
                 {
