@@ -1,5 +1,6 @@
 ﻿using Lefty.Cyan.Azure;
 using Lefty.Cyan.Azure.DevOps;
+using Lefty.Cyan.Infrastructure;
 using Lefty.Cyan.Repository;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -16,17 +17,20 @@ public class PlanCommand
     private readonly CyanConfiguration _config;
     private readonly AzService _az;
     private readonly RepositoryService _repo;
+    private readonly RuleService _bre;
     private readonly ILogger<PlanCommand> _logger;
 
     /// <summary />
     public PlanCommand( IOptions<CyanConfiguration> config,
         AzService az,
         RepositoryService repo,
+        RuleService bre,
         ILogger<PlanCommand> logger )
     {
         _config = config.Value;
         _az = az;
         _repo = repo;
+        _bre = bre;
         _logger = logger;
     }
 
@@ -124,7 +128,7 @@ public class PlanCommand
                 sb.AppendLine();
             }
 
-            if ( proj.Description != null && proj.Description != m?.Description )
+            if ( m == null || proj.Description != m.Description )
             {
                 _logger.LogInformation( "Update project {Project} description", proj.Name );
                 sb.AppendFormat( @"az devops project update --org ""{0}"" --project {1} --description ""{2}"" ", org, proj.Name, proj.Description );
@@ -195,7 +199,7 @@ public class PlanCommand
          */
         if ( sb.Length > 0 )
         {
-            _logger.LogInformation( "Write plan-devops.ps1" );
+            _logger.LogInformation( "Write apply-org.ps1" );
 
             var xb = new StringBuilder();
             xb.AppendLine( $"#" );
@@ -258,7 +262,7 @@ public class PlanCommand
                 continue;
             }
 
-            if ( IsExpired( tu.DateExpiry ) == true )
+            if ( _bre.IsExpired( tu.DateExpiry ) == true )
             {
                 _logger.LogInformation( "{CompanyCode}/{Name}: Is expired, skip", tu.CompanyCode, tu.Name );
                 continue;
@@ -421,7 +425,7 @@ public class PlanCommand
          */
         if ( sb.Length > 0 )
         {
-            _logger.LogInformation( "Write plan-devops.ps1" );
+            _logger.LogInformation( "Write apply-devops.ps1" );
 
             var xb = new StringBuilder();
             xb.AppendLine( $"# " );
@@ -450,12 +454,5 @@ public class PlanCommand
 
             _ => throw new NotImplementedException()
         };
-    }
-
-
-    /// <summary />
-    private bool IsExpired( DateOnly dateExpiry )
-    {
-        return false;
     }
 }

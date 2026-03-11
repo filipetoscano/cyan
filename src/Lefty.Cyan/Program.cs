@@ -1,4 +1,5 @@
 ﻿using Lefty.Cyan.Azure;
+using Lefty.Cyan.Infrastructure;
 using Lefty.Cyan.Repository;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,7 @@ public class Program
         // Services
         svc.AddTransient<RepositoryService>();
         svc.AddTransient<AzService>();
+        svc.AddTransient<RuleService>();
 
         var sp = svc.BuildServiceProvider();
 
