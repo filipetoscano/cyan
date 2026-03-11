@@ -8,6 +8,7 @@ namespace Lefty.Cyan;
 
 /// <summary />
 [Command( "docs", Description = "Generates mark down documentation" )]
+[Subcommand( typeof( Docs.ExcelCommand ) )]
 public class DocsCommand
 {
     private readonly CyanConfiguration _config;

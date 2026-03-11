@@ -1,4 +1,7 @@
-﻿namespace Lefty.Cyan.Repository.Model;
+﻿using System.Text.Json.Serialization;
+using System.Xml;
+
+namespace Lefty.Cyan.Repository.Model;
 
 /// <summary />
 public class Person
@@ -32,4 +35,9 @@ public class Person
 
     /// <summary />
     public string? Role { get; set; }
+
+
+    /// <summary />
+    [JsonIgnore]
+    public XmlDocument? Rbac { get; set; }
 }
