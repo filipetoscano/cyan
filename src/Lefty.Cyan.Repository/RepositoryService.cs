@@ -190,6 +190,9 @@ public partial class RepositoryService
                 p.PrincipalName = p.Username + _config.EntraDomain;
             else
                 p.PrincipalName = p.Username;
+
+            // In Person object, PrincipalName is always in lower-case
+            p.PrincipalName = p.PrincipalName!.ToLowerInvariant();
         }
 
         return p;
