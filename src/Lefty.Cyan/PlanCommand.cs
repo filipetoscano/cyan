@@ -176,7 +176,7 @@ public class PlanCommand
             xb.AppendLine( $"" );
             xb.AppendLine( $"# eof" );
 
-            File.WriteAllText( "plan-org.ps1", xb.ToString() );
+            File.WriteAllText( "apply-org.ps1", xb.ToString() );
         }
     }
 
@@ -404,7 +404,7 @@ public class PlanCommand
             xb.AppendLine( $"" );
             xb.AppendLine( $"# eof" );
 
-            File.WriteAllText( "plan-devops.ps1", xb.ToString() );
+            File.WriteAllText( "apply-devops.ps1", xb.ToString() );
         }
     }
 
