@@ -23,14 +23,26 @@ public partial class RepositoryService
             {
                 Name = projectElem.Attributes[ "name" ]!.Value,
                 Description = projectElem.SelectSingleNode( " c:description ", _mgr )?.InnerText,
+                Groups = new List<string>(),
+                Teams = new List<string>(),
                 Repositories = new List<ProjectRepository>(),
             };
 
-            foreach ( XmlElement repoElem in projectElem.SelectNodes( " c:repository ", _mgr )! )
+            foreach ( XmlElement elem in projectElem.SelectNodes( " c:group ", _mgr )! )
+            {
+                p.Groups.Add( elem.Attributes[ "name" ]!.Value );
+            }
+
+            foreach ( XmlElement elem in projectElem.SelectNodes( " c:team ", _mgr )! )
+            {
+                p.Teams.Add( elem.Attributes[ "name" ]!.Value );
+            }
+
+            foreach ( XmlElement elem in projectElem.SelectNodes( " c:repository ", _mgr )! )
             {
                 p.Repositories.Add( new ProjectRepository()
                 {
-                    Name = repoElem.Attributes[ "name" ]!.Value,
+                    Name = elem.Attributes[ "name" ]!.Value,
                 } );
             }
 

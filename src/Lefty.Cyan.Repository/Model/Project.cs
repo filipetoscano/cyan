@@ -13,5 +13,11 @@ public class Project
     public string? Description { get; set; }
 
     /// <summary />
+    public required List<string> Groups { get; set; }
+
+    /// <summary />
+    public required List<string> Teams { get; set; }
+
+    /// <summary />
     public required List<ProjectRepository> Repositories { get; set; }
 }

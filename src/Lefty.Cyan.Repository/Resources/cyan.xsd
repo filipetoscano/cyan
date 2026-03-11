@@ -57,6 +57,18 @@
             <xsd:sequence>
               <xsd:element name="description" type="xsd:string" minOccurs="0" />
 
+              <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+
+              <xsd:element name="team" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+
               <xsd:element name="repository" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
                   <xsd:attribute name="name" type="xsd:string" use="required" />

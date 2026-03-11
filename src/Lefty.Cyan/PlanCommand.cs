@@ -5,7 +5,6 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
-using System.Text.Json;
 using System.Xml;
 
 namespace Lefty.Cyan;
@@ -99,8 +98,14 @@ public class PlanCommand
         /*
          * 
          */
-        var actual = await _az.DevOpsProjectAsync( true, false, false );
+        var actual = await _az.DevOpsProjectAsync( new AzService.ProjectOptions()
+        {
+            WithRepositories = true,
+            WithGroups = true,
+        } );
         var expected = _repo.DevopsGet();
+
+        var org = "https://dev.azure.com/" + _config.DevopsOrganization;
 
 
         /*
@@ -115,14 +120,34 @@ public class PlanCommand
             if ( m == null )
             {
                 _logger.LogInformation( "Add project {Project}", proj.Name );
-                sb.AppendFormat( @"az devops project create --org ""https://dev.azure.com/{0}"" --name {1} --source-control git --visibility private ", _config.DevopsOrganization, proj.Name );
+                sb.AppendFormat( @"az devops project create --org ""{0}"" --name {1} --source-control git --visibility private ", org, proj.Name );
                 sb.AppendLine();
             }
 
             if ( proj.Description != null && proj.Description != m?.Description )
             {
                 _logger.LogInformation( "Update project {Project} description", proj.Name );
-                sb.AppendFormat( @"az devops project update --org ""https://dev.azure.com/{0}"" --project {1} --description ""{2}"" ", _config.DevopsOrganization, proj.Name, proj.Description );
+                sb.AppendFormat( @"az devops project update --org ""{0}"" --project {1} --description ""{2}"" ", org, proj.Name, proj.Description );
+                sb.AppendLine();
+            }
+
+            foreach ( var group in proj.Groups )
+            {
+                if ( m?.Groups?.Count( x => x.DisplayName == group ) == 1 )
+                    continue;
+
+                _logger.LogInformation( "Add group {Project}/{Team}", proj.Name, group );
+                sb.AppendFormat( @"az devops security group create --org ""{0}"" --project {1} --name ""{2}"" ", org, proj.Name, group );
+                sb.AppendLine();
+            }
+
+            foreach ( var team in proj.Teams )
+            {
+                if ( m?.Groups?.Count( x => x.DisplayName == team ) == 1 )
+                    continue;
+
+                _logger.LogInformation( "Add team {Project}/{Team}", proj.Name, team );
+                sb.AppendFormat( @"az devops team create --org ""{0}"" --project {1} --name ""{2}"" ", org, proj.Name, team );
                 sb.AppendLine();
             }
 
@@ -131,8 +156,12 @@ public class PlanCommand
                 if ( m?.Repositories?.Count( x => x.Name == repo.Name ) == 1 )
                     continue;
 
+                // Default repo will get created automatically
+                if ( repo.Name == proj.Name && m == null )
+                    continue;
+
                 _logger.LogInformation( "Add repository {Project}/{Repository}", proj.Name, repo.Name );
-                sb.AppendFormat( @"az repos create --org ""https://dev.azure.com/{0}"" --project {1} --name {2}", _config.DevopsOrganization, proj.Name, repo.Name );
+                sb.AppendFormat( @"az repos create --org ""{0}"" --project {1} --name {2}", org, proj.Name, repo.Name );
                 sb.AppendLine();
             }
         }
@@ -169,7 +198,8 @@ public class PlanCommand
             _logger.LogInformation( "Write plan-devops.ps1" );
 
             var xb = new StringBuilder();
-            xb.AppendLine( $"{_config.DevopsOrganization} (devops organization)" );
+            xb.AppendLine( $"#" );
+            xb.AppendLine( $"# {_config.DevopsOrganization} (devops organization)" );
             xb.AppendLine( $"# ---------------------------------------------------------" );
             xb.AppendLine( $"" );
             xb.AppendLine( sb.ToString() );
