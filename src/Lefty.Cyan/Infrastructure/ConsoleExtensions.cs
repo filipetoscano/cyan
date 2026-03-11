@@ -9,9 +9,15 @@ public static class ConsoleExtensions
 
 
     /// <summary />
-    public static void Dump<T>( this T value )
+    public static string xJson<T>( this T value )
     {
-        var json = JsonSerializer.Serialize( value , _jso );
-        Console.WriteLine( json );
+        return JsonSerializer.Serialize( value, _jso );
+    }
+
+
+    /// <summary />
+    public static void xDump<T>( this T value )
+    {
+        Console.WriteLine( xJson( value ) );
     }
 }

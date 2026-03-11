@@ -19,6 +19,10 @@ public class Group
 
 
     /// <summary />
+    [JsonPropertyName( "_memberships" )]
+    public List<GroupMember>? Memberships { get; set; }
+
+    /// <summary />
     [JsonPropertyName( "_members" )]
-    public List<GroupMember>? Members { get; set; }
+    public List<string>? Members { get; set; }
 }

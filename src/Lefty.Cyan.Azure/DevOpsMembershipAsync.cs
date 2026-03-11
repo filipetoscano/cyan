@@ -61,7 +61,7 @@ public partial class AzService
                         Description = sg.Description,
                     };
 
-                    t.Members = q4.Values
+                    t.Memberships = q4.Values
                         .Where( x => x.SubjectKind == "user" )
                         .Select( x => new TeamMember()
                         {
@@ -80,7 +80,7 @@ public partial class AzService
                         Description = sg.Description,
                     };
 
-                    g.Members = q4.Values
+                    g.Memberships = q4.Values
                         .Where( x => x.SubjectKind == "user" )
                         .Select( x => new GroupMember()
                         {
@@ -99,6 +99,56 @@ public partial class AzService
          */
         var q5 = await DevOps<MemberListResponse>( "devops", "user", "list" );
         org.Members = q5.Members;
+
+
+        /*
+         * 
+         */
+        foreach ( var p in org.Projects )
+        {
+            if ( p.Groups != null  )
+            {
+                foreach ( var j in p.Groups )
+                {
+                    if ( j.Memberships == null )
+                        continue;
+
+                    j.Members = new List<string>();
+
+                    foreach ( var m in j.Memberships )
+                    {
+                        var u = org.Members.SingleOrDefault( x => x.User.Descriptor == m.UserDescriptor );
+
+                        if ( u == null )
+                            continue;
+
+                        j.Members.Add( u.User.PrincipalName.ToLowerInvariant() );
+                    }
+                }
+            }
+
+            if ( p.Teams != null )
+            {
+                foreach ( var j in p.Teams )
+                {
+                    if ( j.Memberships == null )
+                        continue;
+
+                    j.Members = new List<string>();
+
+                    foreach ( var m in j.Memberships )
+                    {
+                        var u = org.Members.SingleOrDefault( x => x.User.Descriptor == m.UserDescriptor );
+
+                        if ( u == null )
+                            continue;
+
+                        j.Members.Add( u.User.PrincipalName.ToLowerInvariant() );
+                    }
+                }
+            }
+        }
+
 
         return org;
     }

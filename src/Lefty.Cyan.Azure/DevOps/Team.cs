@@ -19,6 +19,10 @@ public class Team
 
 
     /// <summary />
+    [JsonPropertyName( "_memberships" )]
+    public List<TeamMember>? Memberships { get; set; }
+
+    /// <summary />
     [JsonPropertyName( "_members" )]
-    public List<TeamMember>? Members { get; set; }
+    public List<string>? Members { get; set; }
 }

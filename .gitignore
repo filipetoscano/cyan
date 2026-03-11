@@ -6,7 +6,9 @@
 
 # Specific
 /src/Lefty.Cyan/*.cmd
-/src/Lefty.Cyan/*.sh
+/src/Lefty.Cyan/*.txt
+/src/Lefty.Cyan/*.json
+/src/Lefty.Cyan/*.ps1
 
 # Global ignores
 bin/

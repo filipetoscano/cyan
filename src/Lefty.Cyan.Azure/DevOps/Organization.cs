@@ -4,8 +4,8 @@
 public class Organization
 {
     /// <summary />
-    public List<Project>? Projects { get; set; }
+    public List<Project> Projects { get; set; } = default!;
 
     /// <summary />
-    public List<Member>? Members { get; set; }
+    public List<Member> Members { get; set; } = default!;
 }
