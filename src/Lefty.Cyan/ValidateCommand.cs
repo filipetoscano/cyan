@@ -259,10 +259,23 @@ public class ValidateCommand
             var ln = n.LocalName;
             var rn = n.Attributes[ "name" ]!.Value;
 
-            var mn = azure.SelectSingleNode( $" /c:azure/c:{ln}[ @name = '{rn}' ] ", mgr );
+            var mn = (XmlElement) azure.SelectSingleNode( $" /c:azure//c:{ln}[ @name = '{rn}' ] ", mgr )!;
 
             if ( mn != null )
+            {
+                if ( mn.HasAttribute( "allow" ) == false )
+                    continue;
+
+                var allow = bool.Parse( mn.GetAttribute( "allow" ) );
+
+                if ( allow == false )
+                {
+                    ok = false;
+                    _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which has @allow = false", file, ln, rn );
+                }
+
                 continue;
+            }
 
             ok = false;
             _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which is not defined", file, ln, rn );

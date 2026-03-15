@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema
-    xmlns="urn:cyan"
-    targetNamespace="urn:cyan"
-    xmlns:tns="urn:cyan"
-    elementFormDefault="qualified"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  xmlns="urn:cyan"
+  targetNamespace="urn:cyan"
+  xmlns:tns="urn:cyan"
+  elementFormDefault="qualified"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
 
   <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,17 +15,35 @@
   <xsd:element name="azure">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-          <xsd:element name="acr" type="tns:resource" />
-          <xsd:element name="aks" type="tns:resource" />
-          <xsd:element name="appInsights" type="tns:resource" />
-          <xsd:element name="dataBricks" type="tns:resource" />
-          <xsd:element name="keyVault" type="tns:resource" />
-          <xsd:element name="netAppFiles" type="tns:resource" />
-          <xsd:element name="resourceGroup" type="tns:resource" />
-          <xsd:element name="storage" type="tns:resource" />
-          <xsd:element name="subscription" type="tns:resource" />
-        </xsd:choice>
+        <xsd:element name="subscription" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="resourceGroup" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element name="acr" type="tns:resource" />
+                    <xsd:element name="aks" type="tns:resource" />
+                    <xsd:element name="appInsights" type="tns:resource" />
+                    <xsd:element name="dataBricks" type="tns:resource" />
+                    <xsd:element name="eventHub" type="tns:resource" />
+                    <xsd:element name="keyVault" type="tns:resource" />
+                    <xsd:element name="netAppFiles" type="tns:resource" />
+                    <xsd:element name="postgres" type="tns:resource" />
+                    <xsd:element name="redis" type="tns:resource" />
+                    <xsd:element name="sqlServer" type="tns:resource" />
+                    <xsd:element name="storage" type="tns:resource" />
+                  </xsd:choice>
+
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                  <xsd:attribute name="allow" type="xsd:boolean" use="optional" default="true" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+
+            <xsd:attribute name="name" type="xsd:string" use="required" />
+            <xsd:attribute name="allow" type="xsd:boolean" use="optional" default="true" />
+          </xsd:complexType>
+        </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
   </xsd:element>
@@ -198,9 +216,13 @@
               <xsd:element name="aks" type="tns:roleAssignment" />
               <xsd:element name="appInsights" type="tns:roleAssignment" />
               <xsd:element name="dataBricks" type="tns:roleAssignment" />
+              <xsd:element name="eventHub" type="tns:roleAssignment" />
               <xsd:element name="keyVault" type="tns:roleAssignment" />
               <xsd:element name="netAppFiles" type="tns:roleAssignment" />
+              <xsd:element name="postgres" type="tns:roleAssignment" />
+              <xsd:element name="redis" type="tns:roleAssignment" />
               <xsd:element name="resourceGroup" type="tns:roleAssignment" />
+              <xsd:element name="sqlServer" type="tns:roleAssignment" />
               <xsd:element name="storage" type="tns:roleAssignment" />
               <xsd:element name="subscription" type="tns:roleAssignment" />
             </xsd:choice>

@@ -83,7 +83,7 @@ public class VerifyCommand
             }
             catch ( Exception ex )
             {
-                _logger.LogError( ex, "Failed to check if user {PrincipalName} exits", p.PrincipalName );
+                _logger.LogError( ex, "Failed to check if user {PrincipalName} exists", p.PrincipalName );
                 hasErrors = true;
             }
         }
@@ -92,9 +92,80 @@ public class VerifyCommand
         /*
          * Check if Azure resources exist
          */
+        var mgr = _repo.NamespaceManager();
         var azure = LoadXml( "system/azure.xml" );
 
-        // TODO: check
+        foreach ( var subElem in azure.Data.SelectNodes( " /c:azure/c:subscription ", mgr )!.OfType<XmlElement>() )
+        {
+            var sub = subElem.GetAttribute( "name" );
+
+            try
+            {
+                var id = await _az.SubscriptionGetAsync( sub );
+                _logger.LogInformation( "Sub {Subscription} = {Id}", sub, id );
+            }
+            catch ( AzNotFoundException )
+            {
+                hasErrors = true;
+                _logger.LogError( "Sub {Subscription} does not exist", sub );
+                continue;
+            }
+            catch ( Exception ex )
+            {
+                hasErrors = true;
+                _logger.LogError( ex, "Failed to check if subscription {Subscription} exists", sub );
+                continue;
+            }
+
+
+            foreach ( var rgElem in subElem.SelectNodes( " c:resourceGroup ", mgr )!.OfType<XmlElement>() )
+            {
+                var rg = rgElem.GetAttribute( "name" );
+
+                try
+                {
+                    var id = await _az.ResourceGroupGetAsync( rg, sub );
+                    _logger.LogInformation( "Rg {Subscription}/{ResourceGroup} = {Id}", sub, rg, id );
+                }
+                catch ( AzNotFoundException )
+                {
+                    hasErrors = true;
+                    _logger.LogError( "Rg {Subscription}/{ResourceGroup} does not exist", sub, rg );
+                    continue;
+                }
+                catch ( Exception ex )
+                {
+                    hasErrors = true;
+                    _logger.LogError( ex, "Failed to check if rg {Subscription}/{ResourceGroup} exists", sub, rg );
+                    continue;
+                }
+
+
+                foreach ( var resElem in rgElem.SelectNodes( " c:* ", mgr )!.OfType<XmlElement>() )
+                {
+                    var resType = resElem.LocalName;
+                    var resName = resElem.GetAttribute( "name" );
+
+                    try
+                    {
+                        var id = await _az.ResourceGetAsync( resType, resName, rg, sub );
+                        _logger.LogInformation( "Resource {Type}/{Name} = {Id}", resType, resName, id );
+                    }
+                    catch ( AzNotFoundException )
+                    {
+                        hasErrors = true;
+                        _logger.LogError( "Resource {Subscription}/{ResourceGroup}/{Type}/{Name} does not exist", sub, rg, resType, resName );
+                        continue;
+                    }
+                    catch ( Exception ex )
+                    {
+                        hasErrors = true;
+                        _logger.LogError( ex, "Failed to check if resource {Subscription}/{ResourceGroup}/{Type}/{Name} exists", sub, rg, resType, resName );
+                        continue;
+                    }
+                }
+            }
+        }
 
 
         /*
