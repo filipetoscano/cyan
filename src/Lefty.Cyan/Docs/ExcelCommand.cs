@@ -53,7 +53,7 @@ public class ExcelCommand
         /*
          * 
          */
-        using var stream = new FileStream( "output.xlsx", FileMode.Create, FileAccess.Write );
+        using var stream = new FileStream( $"{_config.DevopsOrganization}.xlsx", FileMode.Create, FileAccess.Write );
         using var xlsxWriter = new XlsxWriter( stream );
 
 
