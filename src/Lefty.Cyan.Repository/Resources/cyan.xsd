@@ -22,6 +22,7 @@
           <xsd:element name="keyVault" type="tns:resource" />
           <xsd:element name="netAppFiles" type="tns:resource" />
           <xsd:element name="resourceGroup" type="tns:resource" />
+          <xsd:element name="storage" type="tns:resource" />
           <xsd:element name="subscription" type="tns:resource" />
         </xsd:choice>
       </xsd:sequence>
@@ -198,6 +199,7 @@
               <xsd:element name="keyVault" type="tns:roleAssignment" />
               <xsd:element name="netAppFiles" type="tns:roleAssignment" />
               <xsd:element name="resourceGroup" type="tns:roleAssignment" />
+              <xsd:element name="storage" type="tns:roleAssignment" />
               <xsd:element name="subscription" type="tns:roleAssignment" />
             </xsd:choice>
           </xsd:complexType>
