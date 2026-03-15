@@ -18,6 +18,7 @@
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
           <xsd:element name="acr" type="tns:resource" />
           <xsd:element name="aks" type="tns:resource" />
+          <xsd:element name="appInsights" type="tns:resource" />
           <xsd:element name="dataBricks" type="tns:resource" />
           <xsd:element name="keyVault" type="tns:resource" />
           <xsd:element name="netAppFiles" type="tns:resource" />
@@ -195,6 +196,7 @@
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
               <xsd:element name="acr" type="tns:roleAssignment" />
               <xsd:element name="aks" type="tns:roleAssignment" />
+              <xsd:element name="appInsights" type="tns:roleAssignment" />
               <xsd:element name="dataBricks" type="tns:roleAssignment" />
               <xsd:element name="keyVault" type="tns:roleAssignment" />
               <xsd:element name="netAppFiles" type="tns:roleAssignment" />
