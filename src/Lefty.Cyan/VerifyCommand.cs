@@ -93,7 +93,7 @@ public class VerifyCommand
          * Check if Azure resources exist
          */
         var mgr = _repo.NamespaceManager();
-        var azure = LoadXml( "system/azure.xml" );
+        var azure = _repo.Azure();
 
         foreach ( var subElem in azure.Data.SelectNodes( " /c:azure/c:subscription ", mgr )!.OfType<XmlElement>() )
         {

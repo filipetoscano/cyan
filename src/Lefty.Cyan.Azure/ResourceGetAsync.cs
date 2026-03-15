@@ -8,7 +8,7 @@ public partial class AzService
         var r = await AzCli<ResourceId>( "account", "show",
             "--name", subscription );
 
-        return r.Id;
+        return "/subscriptions/" + r.Id;
     }
 
 
@@ -24,9 +24,9 @@ public partial class AzService
 
 
     /// <summary />
-    public async Task<string> ResourceGetAsync( string resourceType, string resourceName, string resourceGroup, string subscription )
+    public string ResourceTypeFor( string resourceType )
     {
-        var rt = resourceType switch
+        return resourceType switch
         {
             "acr" => "Microsoft.ContainerRegistry/registries",
             "aks" => "Microsoft.ContainerService/managedClusters",
@@ -42,6 +42,13 @@ public partial class AzService
 
             _ => throw new NotSupportedException( resourceType )
         };
+    }
+
+
+    /// <summary />
+    public async Task<string> ResourceGetAsync( string resourceType, string resourceName, string resourceGroup, string subscription )
+    {
+        var rt = ResourceTypeFor( resourceType );
 
         var r = await AzCli<ResourceId>( "resource", "show",
             "--resource-type", rt,

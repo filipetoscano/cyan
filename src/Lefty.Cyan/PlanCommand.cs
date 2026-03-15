@@ -90,10 +90,95 @@ public class PlanCommand
     /// <summary />
     private async Task PlanAzureRbac()
     {
-        // TODO
+        /*
+         * Resource identifiers
+         */
+        var mgr = _repo.NamespaceManager();
+        var azure = _repo.Azure();
+        var scopes = new List<AssignmentScope>();
 
-        await Task.Yield();
+        foreach ( var subElem in azure.Data.SelectNodes( " /c:azure/c:subscription ", mgr )!.OfType<XmlElement>() )
+        {
+            var sub = subElem.GetAttribute( "name" );
+            var subId = await _az.SubscriptionGetAsync( sub );
+
+            if ( IsAllowed( subElem ) == true )
+            {
+                scopes.Add( new AssignmentScope()
+                {
+                    Type = subElem.LocalName,
+                    Name = sub,
+                    Scope = subId,
+                } );
+            }
+
+
+            foreach ( var rgElem in subElem.SelectNodes( " c:resourceGroup ", mgr )!.OfType<XmlElement>() )
+            {
+                var rg = rgElem.GetAttribute( "name" );
+
+                if ( IsAllowed( subElem ) == true )
+                {
+                    scopes.Add( new AssignmentScope()
+                    {
+                        Type = rgElem.LocalName,
+                        Name = rg,
+                        Scope = $"{subId}/resourceGroups/{rg}",
+                    } );
+                }
+
+
+                foreach ( var resElem in rgElem.SelectNodes( " c:* ", mgr )!.OfType<XmlElement>() )
+                {
+                    var resType = resElem.LocalName;
+                    var resName = resElem.GetAttribute( "name" );
+                    var resProv = _az.ResourceTypeFor( resType );
+
+                    scopes.Add( new AssignmentScope()
+                    {
+                        Type = resType,
+                        Name = resName,
+                        Scope = $"{subId}/resourceGroups/{rg}/providers/{resProv}/{resName}",
+                    } );
+                }
+            }
+        }
+
+
+        /*
+         * 
+         */
+        foreach ( var scope in scopes )
+            scope.Assignments = await _az.RoleAssignmentListAsync( scope.Scope );
     }
+
+
+    /// <summary />
+    private static bool IsAllowed( XmlElement element )
+    {
+        if ( element.HasAttribute( "allow" ) == false )
+            return true;
+
+        return bool.Parse( element.Attributes[ "allow" ]!.Value );
+    }
+
+
+    /// <summary />
+    public class AssignmentScope
+    {
+        /// <summary />
+        public required string Type { get; set; }
+
+        /// <summary />
+        public required string Name { get; set; }
+
+        /// <summary />
+        public required string Scope { get; set; }
+
+        /// <summary />
+        public List<RoleAssignment>? Assignments { get; set; }
+    }
+
 
 
     /// <summary />
