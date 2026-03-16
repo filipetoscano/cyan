@@ -26,6 +26,13 @@ public partial class RepositoryService
 
 
     /// <summary />
+    public Result<XmlDocument> Firewall()
+    {
+        return Validate( "dns", "system/firewall.xml" );
+    }
+
+
+    /// <summary />
     public Result<XmlDocument> Jump()
     {
         return Validate( "jump", "system/jump.xml" );

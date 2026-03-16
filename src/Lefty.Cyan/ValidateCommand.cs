@@ -82,6 +82,7 @@ public class ValidateCommand
         var azure = add( _repo.Azure() );
         var devops = add( _repo.Devops() );
         var dns = add( _repo.Dns() );
+        var firewall = add( _repo.Firewall() );
         var jump = add( _repo.Jump() );
 
 
