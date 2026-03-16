@@ -259,27 +259,37 @@ public class ValidateCommand
         {
             var ln = n.LocalName;
             var rn = n.Attributes[ "name" ]!.Value;
+            var ty = n.HasAttribute( "type" ) == true ? n.GetAttribute( "type" ) : "permanent";
 
+            // Match?
             var mn = (XmlElement) azure.SelectSingleNode( $" /c:azure//c:{ln}[ @name = '{rn}' ] ", mgr )!;
 
-            if ( mn != null )
+            if ( mn == null )
             {
-                if ( mn.HasAttribute( "allow" ) == false )
-                    continue;
-
-                var allow = bool.Parse( mn.GetAttribute( "allow" ) );
-
-                if ( allow == false )
-                {
-                    ok = false;
-                    _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which has @allow = false", file, ln, rn );
-                }
-
+                ok = false;
+                _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which is not defined", file, ln, rn );
                 continue;
             }
 
-            ok = false;
-            _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which is not defined", file, ln, rn );
+            // Allow?
+            var allow = bool.Parse( mn.HasAttribute( "allow" ) == true ? mn.GetAttribute( "allow" ) : "true" );
+
+            if ( allow == false )
+            {
+                ok = false;
+                _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} which has @allow = false", file, ln, rn );
+                continue;
+            }
+
+            // Type?
+            var type = mn.HasAttribute( "types" ) == true ? mn.GetAttribute( "types" ) : "permanent";
+
+            if ( type.Contains( ty ) == false )
+            {
+                ok = false;
+                _logger.LogError( "{File} grants Azure RBAC to {ResourceType}/{ResourceName} but type not allowed: {Requested} requested", file, ln, rn, ty );
+                continue;
+            }
         }
 
 

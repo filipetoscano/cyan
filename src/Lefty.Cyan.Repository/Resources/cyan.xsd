@@ -36,12 +36,14 @@
 
                   <xsd:attribute name="name" type="xsd:string" use="required" />
                   <xsd:attribute name="allow" type="xsd:boolean" use="optional" default="true" />
+                  <xsd:attribute name="types" type="tns:rbacTypeList" use="optional" default="permanent" />
                 </xsd:complexType>
               </xsd:element>
             </xsd:sequence>
 
             <xsd:attribute name="name" type="xsd:string" use="required" />
             <xsd:attribute name="allow" type="xsd:boolean" use="optional" default="true" />
+            <xsd:attribute name="types" type="tns:rbacTypeList" use="optional" default="permanent" />
           </xsd:complexType>
         </xsd:element>
       </xsd:sequence>
@@ -341,11 +343,13 @@
 
   <xsd:complexType name="resource">
     <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="types" type="tns:rbacTypeList" use="optional" default="permanent" />
   </xsd:complexType>
 
   <xsd:complexType name="roleAssignment">
     <xsd:attribute name="name" type="xsd:string" use="required" />
     <xsd:attribute name="role" type="xsd:string" use="required" />
+    <xsd:attribute name="type" type="tns:rbacType" use="optional" default="permanent" />
   </xsd:complexType>
 
 
@@ -379,6 +383,26 @@
 
   <xsd:simpleType name="projectNameType">
     <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+
+  <xsd:simpleType name="rbacType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="eligible">
+        <xsd:annotation>
+          <xsd:documentation>Eligible assignment of RBAC (through PIM)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+
+      <xsd:enumeration value="permanent">
+        <xsd:annotation>
+          <xsd:documentation>Permanent assignment of RBAC.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="rbacTypeList">
+    <xsd:list itemType="tns:rbacType" />
   </xsd:simpleType>
 
   <xsd:simpleType name="repositoryNameType">
