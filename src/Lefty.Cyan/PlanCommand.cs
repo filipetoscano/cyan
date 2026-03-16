@@ -36,8 +36,12 @@ public class PlanCommand
 
 
     /// <summary />
+    [Flags]
     public enum PlanScope
     {
+        /// <summary />
+        None = 0,
+
         /// <summary />
         Org = 1,
 
@@ -48,7 +52,10 @@ public class PlanCommand
         Azure = 4,
 
         /// <summary />
-        All = 7,
+        Jump = 8,
+
+        /// <summary />
+        All = 15,
     }
 
 
@@ -104,11 +111,15 @@ public class PlanCommand
 
             if ( IsAllowed( subElem ) == true )
             {
+                var rt = ToRbacType( subElem );
+
                 scopes.Add( new AssignmentScope()
                 {
                     Type = subElem.LocalName,
                     Name = sub,
                     Scope = subId,
+                    AllowPermanent = rt.AllowPermanent,
+                    AllowEligible = rt.AllowEligible,
                 } );
             }
 
@@ -117,13 +128,17 @@ public class PlanCommand
             {
                 var rg = rgElem.GetAttribute( "name" );
 
-                if ( IsAllowed( subElem ) == true )
+                if ( IsAllowed( rgElem ) == true )
                 {
+                    var rt = ToRbacType( rgElem );
+
                     scopes.Add( new AssignmentScope()
                     {
                         Type = rgElem.LocalName,
                         Name = rg,
                         Scope = $"{subId}/resourceGroups/{rg}",
+                        AllowPermanent = rt.AllowPermanent,
+                        AllowEligible = rt.AllowEligible,
                     } );
                 }
 
@@ -133,12 +148,15 @@ public class PlanCommand
                     var resType = resElem.LocalName;
                     var resName = resElem.GetAttribute( "name" );
                     var resProv = _az.ResourceTypeFor( resType );
+                    var rt = ToRbacType( resElem );
 
                     scopes.Add( new AssignmentScope()
                     {
                         Type = resType,
                         Name = resName,
                         Scope = $"{subId}/resourceGroups/{rg}/providers/{resProv}/{resName}",
+                        AllowPermanent = rt.AllowPermanent,
+                        AllowEligible = rt.AllowEligible,
                     } );
                 }
             }
@@ -149,11 +167,26 @@ public class PlanCommand
          * 
          */
         foreach ( var scope in scopes )
-            scope.Assignments = await _az.RoleAssignmentListAsync( scope.Scope );
+        {
+            if ( scope.AllowPermanent == true )
+                scope.Permanent = await _az.RoleAssignmentListAsync( scope.Scope );
+
+            if ( scope.AllowEligible == true )
+                scope.Eligible = await _az.ElligibleRoleAssignmentListAsync( scope.Scope );
+        }
 
 
         /*
          * 
+         */
+        //File.WriteAllText( "azure.json", System.Text.Json.JsonSerializer.Serialize( scopes, new System.Text.Json.JsonSerializerOptions()
+        //{
+        //    WriteIndented = true,
+        //} ) );
+
+
+        /*
+         * Permamenent / Add
          */
         var keep = new List<string>();
 
@@ -172,6 +205,9 @@ public class PlanCommand
 
             foreach ( var r in rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )!.OfType<XmlElement>() )
             {
+                if ( IsRbacType( r, "permanent" ) == false )
+                    continue;
+
                 var resType = r.LocalName;
                 var resName = r.GetAttribute( "name" );
                 var role = r.GetAttribute( "role" );
@@ -184,7 +220,7 @@ public class PlanCommand
                     continue;
                 }
 
-                var exists = s.Assignments?
+                var exists = s.Permanent?
                     .Where( x => x.Role == role )
                     .SingleOrDefault( x => x.PrincipalName.ToLowerInvariant() == p.PrincipalName );
 
@@ -206,11 +242,56 @@ public class PlanCommand
 
 
         /*
-         * 
+         * Eligible / Add
+         */
+        foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
+        {
+            if ( p.Username == null || p.PrincipalName == null )
+                continue;
+
+            if ( p.IsEnabled == false )
+                continue;
+
+            var rbac = _repo.PersonRbac( p.CompanyCode, p.Name ).Data;
+
+            foreach ( var r in rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )!.OfType<XmlElement>() )
+            {
+                if ( IsRbacType( r, "eligible" ) == false )
+                    continue;
+
+                var resType = r.LocalName;
+                var resName = r.GetAttribute( "name" );
+                var role = r.GetAttribute( "role" );
+
+                var s = scopes.SingleOrDefault( x => x.Type == resType && x.Name == resName );
+
+                if ( s == null )
+                {
+                    _logger.LogWarning( "Resource {ResourceType}/{ResourceName} not found as scope", resType, resName );
+                    continue;
+                }
+
+                var exists = s.Eligible?
+                    .Where( x => x.Role == role )
+                    .SingleOrDefault( x => x.PrincipalName.ToLowerInvariant() == p.PrincipalName );
+
+                if ( exists != null )
+                {
+                    keep.Add( exists.Id );
+                    continue;
+                }
+
+                _logger.LogWarning( "Creating eligible RBAC is not yet implemented: {ResourceType}/{ResourceName} for {PrincipalName}", resType, resName, p.PrincipalName );
+            }
+        }
+
+
+        /*
+         * Permanent / Remove
          */
         foreach ( var scope in scopes )
         {
-            foreach ( var ra in scope.Assignments ?? [] )
+            foreach ( var ra in scope.Permanent ?? [] )
             {
                 if ( keep.Contains( ra.Id ) == true )
                     continue;
@@ -232,6 +313,8 @@ public class PlanCommand
                 sb.AppendLine( $"# {ra.PrincipalName} - {scope.Type}/{scope.Name}" );
                 sb.AppendLine( $"az role assignment delete --ids \"{ra.Id}\"" );
             }
+
+            // TODO: No way of identifying eligible RBAC created using Cyan
         }
 
 
@@ -253,6 +336,26 @@ public class PlanCommand
 
             File.WriteAllText( "apply-azure.ps1", xb.ToString() );
         }
+    }
+
+
+    /// <summary />
+    private bool IsRbacType( XmlElement element, string type )
+    {
+        var v = element.HasAttribute( "type" ) == true ? element.GetAttribute( "type" ) : "permanent";
+        return v == type;
+    }
+
+
+    /// <summary />
+    private (bool AllowPermanent, bool AllowEligible) ToRbacType( XmlElement element )
+    {
+        if ( element.HasAttribute( "types" ) == false )
+            return (true, false);
+
+        var v = element.GetAttribute( "types" );
+
+        return (v.Contains( "permanent" ), v.Contains( "eligible" ));
     }
 
 
@@ -279,7 +382,16 @@ public class PlanCommand
         public required string Scope { get; set; }
 
         /// <summary />
-        public List<RoleAssignment>? Assignments { get; set; }
+        public required bool AllowPermanent { get; set; }
+
+        /// <summary />
+        public required bool AllowEligible { get; set; }
+
+        /// <summary />
+        public List<RoleAssignment>? Permanent { get; set; }
+
+        /// <summary />
+        public List<RoleAssignment>? Eligible { get; set; }
     }
 
 
