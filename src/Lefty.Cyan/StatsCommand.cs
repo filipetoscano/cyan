@@ -47,7 +47,7 @@ public class StatsCommand
             var rbac = _repo.PersonRbac( p.CompanyCode, p.Name ).Data;
 
             azRbac += rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )?.Count ?? 0;
-            doUsers += rbac.SelectNodes( " /c:rbac/c:devops:* ", mgr )?.Count ?? 0;
+            doUsers += rbac.SelectNodes( " /c:rbac/c:devops ", mgr )?.Count ?? 0;
             doRbac += rbac.SelectNodes( " /c:rbac/c:devops/c:project/c:group | /c:rbac/c:devops/c:project/c:team ", mgr )?.Count ?? 0;
             jumpRbac += rbac.SelectNodes( " /c:rbac/c:jump ", mgr )?.Count ?? 0;
         }
