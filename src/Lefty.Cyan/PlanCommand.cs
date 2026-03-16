@@ -150,6 +150,109 @@ public class PlanCommand
          */
         foreach ( var scope in scopes )
             scope.Assignments = await _az.RoleAssignmentListAsync( scope.Scope );
+
+
+        /*
+         * 
+         */
+        var keep = new List<string>();
+
+        var dir = _repo.DirectoryGet();
+        var sb = new StringBuilder();
+
+        foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
+        {
+            if ( p.Username == null || p.PrincipalName == null )
+                continue;
+
+            if ( p.IsEnabled == false )
+                continue;
+
+            var rbac = _repo.PersonRbac( p.CompanyCode, p.Name ).Data;
+
+            foreach ( var r in rbac.SelectNodes( " /c:rbac/c:azure/c:* ", mgr )!.OfType<XmlElement>() )
+            {
+                var resType = r.LocalName;
+                var resName = r.GetAttribute( "name" );
+                var role = r.GetAttribute( "role" );
+
+                var s = scopes.SingleOrDefault( x => x.Type == resType && x.Name == resName );
+
+                if ( s == null )
+                {
+                    _logger.LogWarning( "Resource {ResourceType}/{ResourceName} not found as scope", resType, resName );
+                    continue;
+                }
+
+                var exists = s.Assignments?
+                    .Where( x => x.Role == role )
+                    .SingleOrDefault( x => x.PrincipalName.ToLowerInvariant() == p.PrincipalName );
+
+                if ( exists != null )
+                {
+                    keep.Add( exists.Id );
+
+                    if ( exists.Description == null || exists.Description.StartsWith( "cyan|" ) == false )
+                        _logger.LogWarning( "RBAC {ResourceType}/{ResourceName} for {PrincipalName} not managed by cyan", resType, resName, p.PrincipalName );
+
+                    continue;
+                }
+
+                sb.AppendLine( $"" );
+                sb.AppendLine( $"# {p.PrincipalName} - {resType}/{resName}" );
+                sb.AppendLine( $"az role assignment create --assignee {p.PrincipalName} --role \"{role}\" --scope \"{s.Scope}\" --description=\"cyan|{_config.DevopsOrganization}\" " );
+            }
+        }
+
+
+        /*
+         * 
+         */
+        foreach ( var scope in scopes )
+        {
+            foreach ( var ra in scope.Assignments ?? [] )
+            {
+                if ( keep.Contains( ra.Id ) == true )
+                    continue;
+
+                if ( ra.Description == null || ra.Description.StartsWith( "cyan|" ) == false )
+                {
+                    _logger.LogWarning( "RBAC {ResourceType}/{ResourceName} for {PrincipalName} not managed by cyan", scope.Type, scope.Name, ra.PrincipalName );
+                    continue;
+                }
+
+                if ( ra.Description.EndsWith( "|" + _config.DevopsOrganization ) == false )
+                {
+                    _logger.LogWarning( "RBAC {ResourceType}/{ResourceName} for {PrincipalName} managed under {OtherOrg}", scope.Type, scope.Name, ra.PrincipalName, ra.Description.Substring( 5 ) );
+                    continue;
+                }
+
+                _logger.LogInformation( "Remove {ResourceType}/{ResourceName} for {PrincipalName}", scope.Type, scope.Name, ra.PrincipalName );
+                sb.AppendLine( $"" );
+                sb.AppendLine( $"# {ra.PrincipalName} - {scope.Type}/{scope.Name}" );
+                sb.AppendLine( $"az role assignment delete --ids \"{ra.Id}\"" );
+            }
+        }
+
+
+        /*
+         * 
+         */
+        if ( sb.Length > 0 )
+        {
+            _logger.LogInformation( "Write apply-azure.ps1" );
+
+            var xb = new StringBuilder();
+            xb.AppendLine( $"#" );
+            xb.AppendLine( $"# {_config.DevopsOrganization} (azure)" );
+            xb.AppendLine( $"# ---------------------------------------------------------" );
+            xb.AppendLine( $"" );
+            xb.AppendLine( sb.ToString() );
+            xb.AppendLine( $"" );
+            xb.AppendLine( $"# eof" );
+
+            File.WriteAllText( "apply-azure.ps1", xb.ToString() );
+        }
     }
 
 
@@ -178,7 +281,6 @@ public class PlanCommand
         /// <summary />
         public List<RoleAssignment>? Assignments { get; set; }
     }
-
 
 
     /// <summary />
