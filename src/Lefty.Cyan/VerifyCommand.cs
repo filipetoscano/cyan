@@ -32,10 +32,62 @@ public class VerifyCommand
 
 
     /// <summary />
+    [Flags]
+    public enum VerifyScope
+    {
+        /// <summary />
+        None = 0,
+
+        /// <summary />
+        Entra = 1,
+
+        /// <summary />
+        Azure = 2,
+
+        /// <summary />
+        Jump = 4,
+
+        /// <summary />
+        All = 7,
+    }
+
+
+    /// <summary />
+    [Argument( 0, Description = "" )]
+    public VerifyScope Scope { get; set; } = VerifyScope.All;
+
+
+    /// <summary />
     public async Task<int> OnExecuteAsync( CommandLineApplication app )
     {
-        await Task.Yield();
+        /*
+         * 
+         */
+        var hasErrors = false;
 
+        if ( this.Scope.HasFlag( VerifyScope.Entra ) == true )
+            hasErrors = await VerifyEntra() || hasErrors;
+
+        if ( this.Scope.HasFlag( VerifyScope.Azure ) == true )
+            hasErrors = await VerifyAzure() || hasErrors;
+
+        if ( this.Scope.HasFlag( VerifyScope.Jump ) == true )
+            hasErrors = await VerifyJump() || hasErrors;
+
+
+        /*
+         * 
+         */
+        if ( hasErrors == true )
+            return 1;
+
+        return 0;
+    }
+
+
+    /// <summary />
+    public async Task<bool> VerifyEntra()
+    {
         var hasErrors = false;
 
 
@@ -87,6 +139,15 @@ public class VerifyCommand
                 hasErrors = true;
             }
         }
+
+        return hasErrors;
+    }
+
+
+    /// <summary />
+    public async Task<bool> VerifyAzure()
+    {
+        var hasErrors = false;
 
 
         /*
@@ -167,14 +228,14 @@ public class VerifyCommand
             }
         }
 
+        return hasErrors;
+    }
 
-        /*
-         * 
-         */
-        if ( hasErrors == true )
-            return 1;
 
-        return 0;
+    /// <summary />
+    public Task<bool> VerifyJump()
+    {
+        return Task.FromResult( true );
     }
 
 
