@@ -63,6 +63,10 @@ public class PlanCommand
     [Argument( 0, Description = "" )]
     public PlanScope Scope { get; set; } = PlanScope.All;
 
+    /// <summary />
+    [Option( "-O|--output-dir", CommandOptionType.SingleValue, Description = "Directory where file should be generated, otherwise PWD" )]
+    public string? OutputDirectory { get; set; }
+
 
 
     /// <summary />
@@ -334,8 +338,24 @@ public class PlanCommand
             xb.AppendLine( $"" );
             xb.AppendLine( $"# eof" );
 
-            File.WriteAllText( "apply-azure.ps1", xb.ToString() );
+            var fileName = FilenameForOutput( "apply-azure.ps1" );
+            File.WriteAllText( fileName, xb.ToString() );
         }
+    }
+
+
+    /// <summary />
+    private string FilenameForOutput( string fileName )
+    {
+        string dirName;
+
+        if ( this.OutputDirectory == null )
+            dirName = Environment.CurrentDirectory;
+        else
+            dirName = Path.Combine( Environment.CurrentDirectory, this.OutputDirectory );
+
+        Directory.CreateDirectory( dirName );
+        return Path.Combine( dirName, fileName );
     }
 
 
@@ -509,7 +529,8 @@ public class PlanCommand
             xb.AppendLine( $"" );
             xb.AppendLine( $"# eof" );
 
-            File.WriteAllText( "apply-org.ps1", xb.ToString() );
+            var fileName = FilenameForOutput( "apply-org.ps1" );
+            File.WriteAllText( fileName, xb.ToString() );
         }
     }
 
@@ -737,7 +758,8 @@ public class PlanCommand
             xb.AppendLine( $"" );
             xb.AppendLine( $"# eof" );
 
-            File.WriteAllText( "apply-devops.ps1", xb.ToString() );
+            var fileName = FilenameForOutput( "apply-devops.ps1" );
+            File.WriteAllText( fileName, xb.ToString() );
         }
     }
 

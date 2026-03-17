@@ -28,6 +28,11 @@ public class ExcelCommand
 
 
     /// <summary />
+    [Option( "-O|--output-dir", CommandOptionType.SingleValue, Description = "Directory where file should be generated, otherwise PWD" )]
+    public string? OutputDirectory { get; set; }
+
+
+    /// <summary />
     public int OnExecute()
     {
         /*
@@ -53,7 +58,21 @@ public class ExcelCommand
         /*
          * 
          */
-        using var stream = new FileStream( $"{_config.DevopsOrganization}.xlsx", FileMode.Create, FileAccess.Write );
+        string dirName;
+
+        if ( this.OutputDirectory == null )
+            dirName = Environment.CurrentDirectory;
+        else
+            dirName = Path.Combine( Environment.CurrentDirectory, this.OutputDirectory );
+
+        Directory.CreateDirectory( dirName );
+        var fileName = Path.Combine( dirName, $"{_config.DevopsOrganization}.xlsx" );
+
+
+        /*
+         * 
+         */
+        using var stream = new FileStream( fileName, FileMode.Create, FileAccess.Write );
         using var xlsxWriter = new XlsxWriter( stream );
 
 
