@@ -25,7 +25,7 @@ public partial class AzService
     public async Task<List<RoleAssignment>> ElligibleRoleAssignmentListAsync( string scope )
     {
         var url = $"https://management.azure.com{scope}/providers/Microsoft.Authorization/roleEligibilityScheduleInstances?api-version=2020-10-01";
-        var resp = await AzCli<ElligibleRoleAssignmentListResponse>( "rest", "--method", "GET", "--url", $"\"{url}\"" );
+        var resp = await AzCli<ElligibleRoleAssignmentListResponse>( "rest", "--method", "GET", "--url", $"{url}" );
 
         return resp.value
             .Where( x => x.properties != null )
