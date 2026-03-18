@@ -95,10 +95,17 @@ public partial class AzService
 
 
         /*
+         * Note: Users which have never logged in have MetaType = `null`. As soon as they
+         * log in to DevOps once, their MetaType gets changed to `member`.
          * 
+         * Here, for the RBAC difference engine, we only want to return users (even if they
+         * have not logged in) -- as such, we must exclude `managedIdentity` records.
          */
         var q5 = await DevOps<MemberListResponse>( "devops", "user", "list" );
-        org.Members = q5.Members;
+        org.Members = q5.Members
+            .Where( x => x.User.SubjectKind == "user" )
+            .Where( x => x.User.MetaType != "managedIdentity" )
+            .ToList();
 
 
         /*
@@ -148,7 +155,6 @@ public partial class AzService
                 }
             }
         }
-
 
         return org;
     }
