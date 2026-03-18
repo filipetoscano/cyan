@@ -66,7 +66,8 @@ public class ExcelCommand
             dirName = Path.Combine( Environment.CurrentDirectory, this.OutputDirectory );
 
         Directory.CreateDirectory( dirName );
-        var fileName = Path.Combine( dirName, $"{_config.DevopsOrganization}.xlsx" );
+        var dateTime = DateTime.UtcNow.ToString( "yyyyMMdd-HHmmZ" );
+        var fileName = Path.Combine( dirName, $"{_config.DevopsOrganization}-{dateTime}.xlsx" );
 
 
         /*
