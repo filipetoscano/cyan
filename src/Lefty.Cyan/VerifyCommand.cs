@@ -235,7 +235,9 @@ public class VerifyCommand
     /// <summary />
     public Task<bool> VerifyJump()
     {
-        return Task.FromResult( true );
+        // TODO: check if jump servers exist
+
+        return Task.FromResult( false );
     }
 
 
