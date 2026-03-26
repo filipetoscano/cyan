@@ -27,6 +27,7 @@
                     <xsd:element name="dataBricks" type="tns:resource" />
                     <xsd:element name="eventHub" type="tns:resource" />
                     <xsd:element name="keyVault" type="tns:resource" />
+                    <xsd:element name="logAnalyticsWorkspace" type="tns:resource" />
                     <xsd:element name="netAppFiles" type="tns:resource" />
                     <xsd:element name="postgres" type="tns:resource" />
                     <xsd:element name="redis" type="tns:resource" />
@@ -233,6 +234,7 @@
               <xsd:element name="dataBricks" type="tns:roleAssignment" />
               <xsd:element name="eventHub" type="tns:roleAssignment" />
               <xsd:element name="keyVault" type="tns:roleAssignment" />
+              <xsd:element name="logAnalyticsWorkspace" type="tns:roleAssignment" />
               <xsd:element name="netAppFiles" type="tns:roleAssignment" />
               <xsd:element name="postgres" type="tns:roleAssignment" />
               <xsd:element name="redis" type="tns:roleAssignment" />

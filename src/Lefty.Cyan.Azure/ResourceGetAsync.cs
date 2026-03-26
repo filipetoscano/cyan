@@ -34,6 +34,7 @@ public partial class AzService
             "dataBricks" => "Microsoft.Databricks/workspaces",
             "eventHub" => "Microsoft.EventHub/namespaces",
             "keyVault" => "Microsoft.KeyVault/vaults",
+            "logAnalyticsWorkspace" => "Microsoft.OperationalInsights/workspaces",
             "netAppFiles" => "Microsoft.NetApp/netAppAccounts",
             "postgres" => "Microsoft.DBforPostgreSQL/flexibleServers",
             "redis" => "Microsoft.Cache/redis",
