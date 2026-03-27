@@ -92,6 +92,32 @@ public class VerifyCommand
 
 
         /*
+         * Check if Entra groups exist
+         */
+        var groups = _repo.Entra();
+        var mgr = _repo.NamespaceManager();
+
+        foreach ( var groupAttr in groups.Data.SelectNodes( " /c:entra/c:group/@name ", mgr )!.OfType<XmlAttribute>() )
+        {
+            try
+            {
+                var group = await _az.EntraGroupGetAsync( groupAttr.Value );
+                _logger.LogInformation( "{GroupName} = {Id}", group.DisplayName, group.Id );
+            }
+            catch ( AzNotFoundException )
+            {
+                _logger.LogError( "Group {GroupName} does not exist", groupAttr.Value );
+                hasErrors = true;
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "Failed to check if group {GroupName} exists", groupAttr.Value );
+                hasErrors = true;
+            }
+        }
+
+
+        /*
          * Check if EntraID users exist
          */
         var dir = new DirectoryInfo( Path.Combine( _config.Root, "people" ) );
