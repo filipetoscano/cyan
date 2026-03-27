@@ -1,4 +1,5 @@
 ﻿using Lefty.Cyan.Azure;
+using Lefty.Cyan.Azure.Account;
 using Lefty.Cyan.Azure.DevOps;
 using Lefty.Cyan.Infrastructure;
 using Lefty.Cyan.Repository;
@@ -55,7 +56,10 @@ public class PlanCommand
         Jump = 8,
 
         /// <summary />
-        All = 15,
+        Entra = 16,
+
+        /// <summary />
+        All = 31,
     }
 
 
@@ -94,7 +98,96 @@ public class PlanCommand
         if ( this.Scope.HasFlag( PlanScope.Azure ) == true )
             await PlanAzureRbac();
 
+        if ( this.Scope.HasFlag( PlanScope.Entra ) == true )
+            await PlanEntra();
+
         return 0;
+    }
+
+
+    /// <summary />
+    private async Task PlanEntra()
+    {
+        var sb = new StringBuilder();
+        var expected = _repo.Entra();
+        var mgr = _repo.NamespaceManager();
+
+
+        /*
+         * 
+         */
+        var actual = new Dictionary<string, List<EntraMember>>();
+
+        foreach ( var groupAttr in expected.Data.SelectNodes( " /c:entra/c:group/@name ", mgr )!.OfType<XmlAttribute>() )
+        {
+            var members = await _az.EntraMemberListAync( groupAttr.Value );
+            actual.Add( groupAttr.Value, members );
+        }
+
+
+        /*
+         * Add missing
+         */
+        var expected2 = new Dictionary<string, List<string>>();
+
+        foreach ( var groupElem in expected.Data.SelectNodes( " /c:entra/c:group ", mgr )!.OfType<XmlElement>() )
+        {
+            var groupName = groupElem.Attributes[ "name" ]!.Value;
+            var members = actual[ groupName ];
+            expected2.Add( groupName, new List<string>() );
+
+            foreach ( var userAttr in groupElem.SelectNodes( " c:user/@name ", mgr )!.OfType<XmlAttribute>() )
+            {
+                var upn = userAttr.Value + _config.EntraDomain;
+                expected2[ groupName ].Add( upn.ToLowerInvariant() );
+                var m = members.SingleOrDefault( x => x.UserPrincipalName.ToLowerInvariant() == upn.ToLowerInvariant() );
+
+                if ( m != null )
+                    continue;
+
+                sb.AppendLine( $"# {groupName}: add {userAttr.Value}" );
+                sb.AppendLine( $"$u = az ad user show --id {upn} | ConvertFrom-Json" );
+                sb.AppendLine( $"az ad group member add --group \"{groupName}\" --member-id $u.id" );
+                sb.AppendLine();
+            }
+        }
+
+
+        /*
+         * Remove unnecessary
+         */
+        foreach ( var group in actual )
+        {
+            foreach ( var member in group.Value )
+            {
+                if ( expected2[ group.Key ].Contains( member.UserPrincipalName.ToLowerInvariant() ) == true )
+                    continue;
+
+                sb.AppendLine( $"# {group.Key}: remove {member.UserPrincipalName}" );
+                sb.AppendLine( $"az ad group member remove --group \"{group.Key}\" --member-id {member.Id}" );
+                sb.AppendLine();
+            }
+        }
+
+
+        /*
+         * 
+         */
+        if ( sb.Length > 0 )
+        {
+            _logger.LogInformation( "Write apply-entra.ps1" );
+
+            var xb = new StringBuilder();
+            xb.AppendLine( $"#" );
+            xb.AppendLine( $"# {_config.DevopsOrganization} (Entra)" );
+            xb.AppendLine( $"# ---------------------------------------------------------" );
+            xb.AppendLine( $"" );
+            xb.AppendLine( sb.ToString() );
+            xb.AppendLine( $"# eof" );
+
+            var fileName = FilenameForOutput( "apply-entra.ps1" );
+            File.WriteAllText( fileName, xb.ToString() );
+        }
     }
 
 
