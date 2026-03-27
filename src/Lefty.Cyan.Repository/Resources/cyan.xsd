@@ -164,6 +164,11 @@
             </xsd:sequence>
             <xsd:attribute name="name" type="xsd:string" use="required" />
           </xsd:complexType>
+
+          <xsd:unique name="uqGroupUser">
+            <xsd:selector xpath=" tns:user " />
+            <xsd:field xpath=" @name " />
+          </xsd:unique>
         </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
