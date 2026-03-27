@@ -82,6 +82,7 @@ public class ValidateCommand
         var azure = add( _repo.Azure() );
         var devops = add( _repo.Devops() );
         var dns = add( _repo.Dns() );
+        var entra = add( _repo.Entra() );
         var firewall = add( _repo.Firewall() );
         var jump = add( _repo.Jump() );
 
@@ -150,6 +151,12 @@ public class ValidateCommand
         /*
          * 
          */
+        add2( ValidateEntra( entra, people ) );
+
+
+        /*
+         * 
+         */
         var duplicates = people
             .Where( p => p.Username is not null )
             .GroupBy( p => p.Username )
@@ -173,6 +180,30 @@ public class ValidateCommand
             return 1;
 
         return 0;
+    }
+
+
+    /// <summary />
+    private Result<bool> ValidateEntra( XmlDocument entra, List<Person> people )
+    {
+        var mgr = _repo.NamespaceManager();
+        var hasError = false;
+
+        foreach ( var unameAttr in entra.SelectNodes( " /c:entra/c:group/c:user/@name ", mgr )!.OfType<XmlAttribute>() )
+        {
+            var p = people.SingleOrDefault( x => x.Username == unameAttr.Value );
+
+            if ( p == null )
+            {
+                hasError = true;
+                _logger.LogError( "{File} references {Username} which isn't defined", "system/entra.xml", unameAttr.Value );
+            }
+        }
+
+        if ( hasError == true )
+            return new Result<bool>( "G002", "" );
+
+        return new Result<bool>( true );
     }
 
 

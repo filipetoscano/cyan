@@ -39,6 +39,7 @@ public class InitCommand
             b = b && FileEnsure( "system/azure.xml" );
             b = b && FileEnsure( "system/devops.xml" );
             b = b && FileEnsure( "system/dns.xml" );
+            b = b && FileEnsure( "system/entra.xml" );
             b = b && FileEnsure( "system/firewall.xml" );
             b = b && FileEnsure( "system/jump.xml" );
             b = b && FileEnsure( "cyan.xsd" );
@@ -51,6 +52,7 @@ public class InitCommand
             FileEnsure( "system/azure.xml", true );
             FileEnsure( "system/devops.xml", true );
             FileEnsure( "system/dns.xml", true );
+            FileEnsure( "system/entra.xml", true );
             FileEnsure( "system/firewall.xml", true );
             FileEnsure( "system/jump.xml", true );
             FileEnsure( "cyan.xsd", true );

@@ -26,6 +26,13 @@ public partial class RepositoryService
 
 
     /// <summary />
+    public Result<XmlDocument> Entra()
+    {
+        return Validate( "entra", "system/entra.xml" );
+    }
+
+
+    /// <summary />
     public Result<XmlDocument> Firewall()
     {
         return Validate( "firewall", "system/firewall.xml" );
