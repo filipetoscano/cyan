@@ -1,6 +1,7 @@
 ﻿using Lefty.Cyan.Azure;
 using Lefty.Cyan.Azure.Account;
 using Lefty.Cyan.Azure.DevOps;
+using Lefty.Cyan.Azure.Roles;
 using Lefty.Cyan.Infrastructure;
 using Lefty.Cyan.Repository;
 using McMaster.Extensions.CommandLineUtils;

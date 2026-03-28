@@ -1,4 +1,4 @@
-﻿namespace Lefty.Cyan.Azure;
+﻿namespace Lefty.Cyan.Azure.Roles;
 
 /// <summary />
 public class RoleAssignment

@@ -1,9 +1,17 @@
 ﻿using Lefty.Cyan.Azure.Model;
+using Lefty.Cyan.Azure.Roles;
 
 namespace Lefty.Cyan.Azure;
 
 public partial class AzService
 {
+    /// <summary />
+    public Task<List<Roles.RoleDefinition>> RoleListAsync()
+    {
+        return AzCli<List<Roles.RoleDefinition>>( "role", "definition", "list" );
+    }
+
+
     /// <summary />
     public async Task<List<RoleAssignment>> RoleAssignmentListAsync( string scope )
     {
