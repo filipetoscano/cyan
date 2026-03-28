@@ -110,8 +110,9 @@ public class PlanCommand
     private async Task PlanEntra()
     {
         var sb = new StringBuilder();
-        var expected = _repo.Entra();
+
         var mgr = _repo.NamespaceManager();
+        var groups = _repo.Entra();
 
 
         /*
@@ -119,7 +120,7 @@ public class PlanCommand
          */
         var actual = new Dictionary<string, List<EntraMember>>();
 
-        foreach ( var groupAttr in expected.Data.SelectNodes( " /c:entra/c:group/@name ", mgr )!.OfType<XmlAttribute>() )
+        foreach ( var groupAttr in groups.Data.SelectNodes( " /c:entra/c:group/@name ", mgr )!.OfType<XmlAttribute>() )
         {
             var members = await _az.EntraMemberListAync( groupAttr.Value );
             actual.Add( groupAttr.Value, members );
@@ -127,28 +128,54 @@ public class PlanCommand
 
 
         /*
+         *
+         */
+        var expected = new Dictionary<string, List<string>>();
+        var directory = _repo.DirectoryGet();
+
+        foreach ( var person in directory.SelectMany( x => x.Persons ?? [] ) )
+        {
+            if ( person.Username == null || person.PrincipalName == null )
+                continue;
+
+            if ( person.IsEnabled == false )
+                continue;
+
+
+            var pr = _repo.PersonRbac( person.CompanyCode, person.Name );
+
+            if ( pr.IsOk == false )
+                continue;
+
+            foreach ( var groupAttr in pr.Data.SelectNodes( " /c:rbac/c:entra/c:group/@name ", mgr )!.OfType<XmlAttribute>() )
+            {
+                var groupName = groupAttr.Value;
+
+                if ( expected.ContainsKey( groupName ) == false )
+                    expected.Add( groupName, new List<string>() );
+
+                expected[ groupName ].Add( person.PrincipalName );
+            }
+        }
+
+
+        /*
          * Add missing
          */
-        var expected2 = new Dictionary<string, List<string>>();
-
-        foreach ( var groupElem in expected.Data.SelectNodes( " /c:entra/c:group ", mgr )!.OfType<XmlElement>() )
+        foreach ( var kv in expected )
         {
-            var groupName = groupElem.Attributes[ "name" ]!.Value;
-            var members = actual[ groupName ];
-            expected2.Add( groupName, new List<string>() );
+            var members = actual[ kv.Key ];
 
-            foreach ( var userAttr in groupElem.SelectNodes( " c:user/@name ", mgr )!.OfType<XmlAttribute>() )
+            foreach ( var upn in kv.Value )
             {
-                var upn = userAttr.Value + _config.EntraDomain;
-                expected2[ groupName ].Add( upn.ToLowerInvariant() );
-                var m = members.SingleOrDefault( x => x.UserPrincipalName.ToLowerInvariant() == upn.ToLowerInvariant() );
+                var m = members.SingleOrDefault( x => x.UserPrincipalName.ToLowerInvariant() == upn );
 
                 if ( m != null )
                     continue;
 
-                sb.AppendLine( $"# {groupName}: add {userAttr.Value}" );
+                sb.AppendLine( $"# {kv.Key}: add {upn}" );
                 sb.AppendLine( $"$u = az ad user show --id {upn} | ConvertFrom-Json" );
-                sb.AppendLine( $"az ad group member add --group \"{groupName}\" --member-id $u.id" );
+                sb.AppendLine( $"az ad group member add --group \"{kv.Key}\" --member-id $u.id" );
                 sb.AppendLine();
             }
         }
@@ -157,18 +184,19 @@ public class PlanCommand
         /*
          * Remove unnecessary
          */
-        foreach ( var group in actual )
+        foreach ( var kv in actual )
         {
-            foreach ( var member in group.Value )
+            foreach ( var member in kv.Value )
             {
-                if ( expected2[ group.Key ].Contains( member.UserPrincipalName.ToLowerInvariant() ) == true )
+                if ( expected[ kv.Key ].Contains( member.UserPrincipalName.ToLowerInvariant() ) == true )
                     continue;
 
-                sb.AppendLine( $"# {group.Key}: remove {member.UserPrincipalName}" );
-                sb.AppendLine( $"az ad group member remove --group \"{group.Key}\" --member-id {member.Id}" );
+                sb.AppendLine( $"# {kv.Key}: remove {member.UserPrincipalName}" );
+                sb.AppendLine( $"az ad group member remove --group \"{kv.Key}\" --member-id {member.Id}" );
                 sb.AppendLine();
             }
         }
+
 
 
         /*

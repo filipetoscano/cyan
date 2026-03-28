@@ -126,6 +126,23 @@ public class ExcelCommand
 
 
         /*
+         * Entra groups
+         */
+        BeginEntraSheet( xlsxWriter );
+
+        foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
+        {
+            foreach ( var g in p.Rbac!.SelectNodes( " /c:rbac/c:entra/c:group ", mgr )!.OfType<XmlElement>() )
+            {
+                xlsxWriter
+                    .BeginRow()
+                    .Write( p.Username )
+                    .Write( g.Attributes[ "name" ]!.Value );
+            }
+        }
+
+
+        /*
          * Jump servers
          */
         BeginJumpSheet( xlsxWriter );
@@ -138,6 +155,22 @@ public class ExcelCommand
                     .BeginRow()
                     .Write( p.Username )
                     .Write( rb.Attributes[ "server" ]!.Value );
+            }
+        }
+
+
+        /*
+         * VPN
+         */
+        BeginVpnSheet( xlsxWriter );
+
+        foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
+        {
+            foreach ( var rb in p.Rbac!.SelectNodes( " /c:rbac/c:vpn ", mgr )!.OfType<XmlElement>() )
+            {
+                xlsxWriter
+                    .BeginRow()
+                    .Write( p.Username );
             }
         }
 
@@ -242,7 +275,7 @@ public class ExcelCommand
 
 
     /// <summary />
-    private void BeginJumpSheet( XlsxWriter writer )
+    private void BeginEntraSheet( XlsxWriter writer )
     {
         var columns = new List<XlsxColumn>()
         {
@@ -251,7 +284,34 @@ public class ExcelCommand
 
             // Blue
             XlsxColumn.Formatted( 36 ),
-            XlsxColumn.Formatted( 36 ),
+        };
+
+        writer.BeginWorksheet( "Entra", 2, 1, columns: columns );
+
+        writer.BeginRow()
+            .Write( "Entra", XP.OrangeDark )
+            .Write( "Group", XP.BlueDark )
+            ;
+
+        writer.BeginRow()
+            .Write( "Username", XP.OrangeLight )
+            .Write( "Name", XP.BlueLight )
+            ;
+
+        writer
+            .SetAutoFilter( 2, 1, 1, 2 );
+    }
+
+
+    /// <summary />
+    private void BeginJumpSheet( XlsxWriter writer )
+    {
+        var columns = new List<XlsxColumn>()
+        {
+            // Green
+            XlsxColumn.Formatted( 26 ),
+
+            // Blue
             XlsxColumn.Formatted( 36 ),
         };
 
@@ -269,5 +329,29 @@ public class ExcelCommand
 
         writer
             .SetAutoFilter( 2, 1, 1, 2 );
+    }
+
+
+    /// <summary />
+    private void BeginVpnSheet( XlsxWriter writer )
+    {
+        var columns = new List<XlsxColumn>()
+        {
+            // Green
+            XlsxColumn.Formatted( 26 ),
+        };
+
+        writer.BeginWorksheet( "VPN", 2, 1, columns: columns );
+
+        writer.BeginRow()
+            .Write( "Entra", XP.OrangeDark )
+            ;
+
+        writer.BeginRow()
+            .Write( "Username", XP.OrangeLight )
+            ;
+
+        writer
+            .SetAutoFilter( 2, 1, 1, 1 );
     }
 }

@@ -120,6 +120,7 @@ public class ValidateCommand
                     add2( ValidateMainRbac( mainf, main ) );
                     add2( ValidateAzureRbac( mainf, main, azure ) );
                     add2( ValidateDevopsRbac( mainf, main, devops ) );
+                    add2( ValidateEntraRbac( mainf, main, entra ) );
                     add2( ValidateJumpRbac( mainf, main, jump ) );
                 }
 
@@ -142,16 +143,11 @@ public class ValidateCommand
 
                     add2( ValidateAzureRbac( tempf, temp, azure ) );
                     add2( ValidateDevopsRbac( tempf, temp, devops ) );
+                    add2( ValidateEntraRbac( tempf, temp, entra ) );
                     add2( ValidateJumpRbac( tempf, temp, jump ) );
                 }
             }
         }
-
-
-        /*
-         * 
-         */
-        add2( ValidateEntra( entra, people ) );
 
 
         /*
@@ -180,30 +176,6 @@ public class ValidateCommand
             return 1;
 
         return 0;
-    }
-
-
-    /// <summary />
-    private Result<bool> ValidateEntra( XmlDocument entra, List<Person> people )
-    {
-        var mgr = _repo.NamespaceManager();
-        var hasError = false;
-
-        foreach ( var unameAttr in entra.SelectNodes( " /c:entra/c:group/c:user/@name ", mgr )!.OfType<XmlAttribute>() )
-        {
-            var p = people.SingleOrDefault( x => x.Username == unameAttr.Value );
-
-            if ( p == null )
-            {
-                hasError = true;
-                _logger.LogError( "{File} references {Username} which isn't defined", "system/entra.xml", unameAttr.Value );
-            }
-        }
-
-        if ( hasError == true )
-            return new Result<bool>( "G002", "" );
-
-        return new Result<bool>( true );
     }
 
 
@@ -370,6 +342,47 @@ public class ValidateCommand
          */
         if ( ok == false )
             return new Result<bool>( "F001", "Some DevOps projects failed to match" );
+
+        return new Result<bool>( true );
+    }
+
+
+    /// <summary />
+    private Result<bool> ValidateEntraRbac( string file, XmlDocument rbac, XmlDocument? entra )
+    {
+        if ( entra == null )
+            return new Result<bool>( true );
+
+        var mgr = _repo.NamespaceManager();
+        var nodes = rbac.SelectNodes( " /c:rbac/c:entra/c:group ", mgr )!;
+
+        if ( nodes.Count == 0 )
+            return new Result<bool>( true );
+
+
+        /*
+         * 
+         */
+        var ok = true;
+
+        foreach ( XmlElement n in nodes )
+        {
+            var gn = n.Attributes[ "name" ]!.Value;
+            var mn = entra.SelectSingleNode( $" /c:entra/c:group[ @name = '{gn}' ] ", mgr );
+
+            if ( mn != null )
+                continue;
+
+            ok = false;
+            _logger.LogError( "{File} grants access to group {GroupName} which is not defined", file, gn );
+        }
+
+
+        /*
+         * 
+         */
+        if ( ok == false )
+            return new Result<bool>( "J001", "Some groups failed to match" );
 
         return new Result<bool>( true );
     }

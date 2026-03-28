@@ -155,23 +155,18 @@
             <xsd:sequence>
               <xsd:element name="description" type="xsd:string" minOccurs="0" />
               <xsd:element name="purpose" type="xsd:string" minOccurs="0" />
-
-              <xsd:element name="user" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                  <xsd:attribute name="name" type="xsd:string" use="required" />
-                </xsd:complexType>
-              </xsd:element>
             </xsd:sequence>
+
             <xsd:attribute name="name" type="xsd:string" use="required" />
           </xsd:complexType>
-
-          <xsd:unique name="uqGroupUser">
-            <xsd:selector xpath=" tns:user " />
-            <xsd:field xpath=" @name " />
-          </xsd:unique>
         </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
+
+    <xsd:unique name="uqGroup">
+      <xsd:selector xpath=" tns:group " />
+      <xsd:field xpath=" @name " />
+    </xsd:unique>
   </xsd:element>
 
 
@@ -252,6 +247,10 @@
           </xsd:complexType>
         </xsd:element>
 
+        <xsd:element name="vpn" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType />
+        </xsd:element>
+
         <xsd:element name="jump" minOccurs="0" maxOccurs="unbounded">
           <xsd:complexType>
             <xsd:attribute name="server" type="xsd:string" use="required" />
@@ -288,12 +287,29 @@
             <xsd:attribute name="access" type="tns:devopsAccessType" use="required" />
           </xsd:complexType>
         </xsd:element>
+
+        <xsd:element name="entra" minOccurs="0">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
 
     <xsd:key name="uqJumpServers">
       <xsd:selector xpath=" tns:jump " />
       <xsd:field xpath=" @server " />
+    </xsd:key>
+
+    <xsd:key name="uqEntraGroup">
+      <xsd:selector xpath=" tns:entra/tns:group " />
+      <xsd:field xpath=" @name " />
     </xsd:key>
 
     <xsd:key name="uqDevopsProjects">
