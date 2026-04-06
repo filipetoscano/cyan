@@ -67,7 +67,17 @@ public partial class AzService
          */
         _logger.LogDebug( "{Json}", output );
 
-        return JsonSerializer.Deserialize<T>( output )!;
+        try
+        {
+            return JsonSerializer.Deserialize<T>( output )!;
+        }
+        catch ( Exception )
+        {
+            _logger.LogError( "Failed to deserialize:" );
+            _logger.LogError( "{Json}", output );
+
+            throw;
+        }
     }
 
 

@@ -38,17 +38,36 @@ public class VerifyCommand
         /// <summary />
         None = 0,
 
-        /// <summary />
+        /// <summary>
+        /// Verifies that users exist in EntraId.
+        /// </summary>
         Entra = 1,
 
-        /// <summary />
-        Azure = 2,
+        /// <summary>
+        /// Verifies that resources exist in Azure tenant.
+        /// </summary>
+        Resources = 2,
 
-        /// <summary />
-        Jump = 4,
+        /// <summary>
+        /// Verifies that role definitions exist in Azure.
+        /// </summary>
+        Roles = 4,
 
-        /// <summary />
-        All = 7,
+        /// <summary>
+        /// Verifies that jump servers exist.
+        /// </summary>
+        Jump = 8,
+
+
+        /// <summary>
+        /// Verifies <c>Resources</c> and <c>Roles</c>.
+        /// </summary>
+        Azure = 6,
+
+        /// <summary>
+        /// Verifies all.
+        /// </summary>
+        All = 15,
     }
 
 
@@ -68,8 +87,11 @@ public class VerifyCommand
         if ( this.Scope.HasFlag( VerifyScope.Entra ) == true )
             hasErrors = await VerifyEntra() || hasErrors;
 
-        if ( this.Scope.HasFlag( VerifyScope.Azure ) == true )
-            hasErrors = await VerifyAzure() || hasErrors;
+        if ( this.Scope.HasFlag( VerifyScope.Resources ) == true )
+            hasErrors = await VerifyResources() || hasErrors;
+
+        if ( this.Scope.HasFlag( VerifyScope.Roles ) == true )
+            hasErrors = await VerifyRoles() || hasErrors;
 
         if ( this.Scope.HasFlag( VerifyScope.Jump ) == true )
             hasErrors = await VerifyJump() || hasErrors;
@@ -171,7 +193,67 @@ public class VerifyCommand
 
 
     /// <summary />
-    public async Task<bool> VerifyAzure()
+    public async Task<bool> VerifyRoles()
+    {
+        var hasErrors = false;
+
+
+        /*
+         * 
+         */
+        var roles = new List<string>();
+
+        var dir = _repo.DirectoryGet();
+        var mgr = _repo.NamespaceManager();
+
+        foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
+        {
+            if ( p.Username == null )
+                continue;
+
+            if ( p.IsEnabled == false )
+                continue;
+
+            var res = _repo.PersonRbac( p.CompanyCode, p.Name );
+            p.Rbac = res.Data;
+
+            foreach ( var ra in p.Rbac.SelectNodes( " /c:rbac/c:azure/c:*/@role ", mgr )!.OfType<XmlAttribute>().Select( x => x.Value ) )
+            {
+                if ( roles.Contains( ra ) == true )
+                    continue;
+
+                roles.Add( ra );
+            }
+        }
+
+
+        /*
+         * 
+         */
+        var defs = await _az.RoleListAsync();
+
+
+        /*
+         * 
+         */
+        foreach ( var r in roles )
+        {
+            var rd = defs.SingleOrDefault( x => x.Name == r );
+
+            if ( rd != null )
+                continue;
+
+            hasErrors = true;
+            _logger.LogError( "Role definition {Role} not found", r );
+        }
+
+
+        return hasErrors;
+    }
+
+
+    /// <summary />
+    public async Task<bool> VerifyResources()
     {
         var hasErrors = false;
 

@@ -8,7 +8,7 @@ public partial class AzService
     /// <summary />
     public Task<List<Roles.RoleDefinition>> RoleListAsync()
     {
-        return AzCli<List<Roles.RoleDefinition>>( "role", "definition", "list" );
+        return AzCli<List<Roles.RoleDefinition>>( "role", "definition", "list", "--only-show-errors" );
     }
 
 
