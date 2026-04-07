@@ -412,6 +412,7 @@
   <xsd:simpleType name="devopsAccessType">
     <xsd:restriction base="xsd:string">
       <xsd:enumeration value="Basic" />
+      <xsd:enumeration value="BasicAndTestPlans" />
       <xsd:enumeration value="Stakeholder" />
     </xsd:restriction>
   </xsd:simpleType>

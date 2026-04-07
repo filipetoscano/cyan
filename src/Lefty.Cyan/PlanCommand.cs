@@ -892,7 +892,7 @@ public class PlanCommand
         return value switch
         {
             DevOpsAccessType.Basic => "express",
-            DevOpsAccessType.BasicAndTest => "advanced",
+            DevOpsAccessType.BasicAndTestPlans => "advanced",
             DevOpsAccessType.Stakeholder => "stakeholder",
 
             _ => throw new NotImplementedException()

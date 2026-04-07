@@ -18,7 +18,7 @@ public enum DevOpsAccessType
     Basic,
 
     [JsonStringEnumMemberName( "advanced" )]
-    BasicAndTest,
+    BasicAndTestPlans,
 
     [JsonStringEnumMemberName( "stakeholder" )]
     Stakeholder,
