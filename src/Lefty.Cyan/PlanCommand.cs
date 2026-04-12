@@ -588,7 +588,7 @@ public class PlanCommand
 
             foreach ( var team in proj.Teams )
             {
-                if ( m?.Groups?.Count( x => x.DisplayName == team ) == 1 )
+                if ( m?.Teams?.Count( x => x.DisplayName == team ) == 1 )
                     continue;
 
                 _logger.LogInformation( "Add team {Project}/{Team}", proj.Name, team );
