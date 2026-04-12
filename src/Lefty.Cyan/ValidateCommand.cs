@@ -322,6 +322,18 @@ public class ValidateCommand
         /*
          * 
          */
+        string[] builtIn = [
+            "Build Administrators",
+            "Contributors",
+            "Project Administrators",
+            "Readers",
+            "Release Administrators"
+        ];
+
+
+        /*
+         * 
+         */
         var ok = true;
 
         foreach ( XmlElement n in nodes )
@@ -329,11 +341,37 @@ public class ValidateCommand
             var pn = n.Attributes[ "name" ]!.Value;
             var mn = devops.SelectSingleNode( $" /c:devops/c:project[ @name = '{pn}' ] ", mgr );
 
-            if ( mn != null )
-                continue;
+            if ( mn == null )
+            {
+                ok = false;
+                _logger.LogError( "{File} grants DevOps RBAC to project {ProjectName} which is not defined", file, pn );
 
-            ok = false;
-            _logger.LogError( "{File} grants DevOps RBAC to project {ProjectName} which is not defined", file, pn );
+                continue;
+            }
+
+            foreach ( var groupName in n.SelectNodes( " c:group/@name ", mgr )!.OfType<XmlAttribute>().Select( x => x.Value ) )
+            {
+                if ( builtIn.Contains( groupName ) == true )
+                    continue;
+
+                if ( mn.SelectSingleNode( $" c:group[ @name = '{groupName}' ] ", mgr ) == null )
+                {
+                    ok = false;
+                    _logger.LogError( "{File} grants membership to group {ProjectName}/{GroupName} which is not defined", file, pn, groupName );
+                }
+            }
+
+            foreach ( var teamName in n.SelectNodes( " c:team/@name ", mgr )!.OfType<XmlAttribute>().Select( x => x.Value ) )
+            {
+                if ( teamName == pn + " Team" )
+                    continue;
+
+                if ( mn.SelectSingleNode( $" c:team[ @name = '{teamName}' ] ", mgr ) == null )
+                {
+                    ok = false;
+                    _logger.LogError( "{File} grants membership to team {ProjectName}/{TeamName} which is not defined", file, pn, teamName );
+                }
+            }
         }
 
 
