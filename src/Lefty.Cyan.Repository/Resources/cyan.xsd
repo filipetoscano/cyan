@@ -132,13 +132,36 @@
             <xsd:field xpath=" @name" />
           </xsd:unique>
         </xsd:element>
+
+        <xsd:element name="targets" minOccurs="0">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="target" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                  <xsd:attribute name="ip" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
 
     <xsd:unique name="uqEnvs">
       <xsd:selector xpath=" tns:environment " />
-      <xsd:field xpath=" @name" />
+      <xsd:field xpath=" @name " />
     </xsd:unique>
+
+    <xsd:key name="uqTarget">
+      <xsd:selector xpath=" tns:targets/tns:target " />
+      <xsd:field xpath=" @name " />
+    </xsd:key>
+
+    <xsd:keyref name="refTarget" refer="uqTarget">
+      <xsd:selector xpath=" tns:environment/tns:* " />
+      <xsd:field xpath=" @target " />
+    </xsd:keyref>
   </xsd:element>
 
 
@@ -342,9 +365,9 @@
 
   <xsd:complexType name="dnsEnvironment">
     <xsd:sequence>
-      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />
-      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" />
-      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
 
     <xsd:attribute name="name" type="environmentNameType" use="required" />
@@ -358,9 +381,9 @@
         </xsd:complexType>
       </xsd:element>
 
-      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" />
-      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" />
-      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" />
+      <xsd:element name="internal" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="public-hold" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="public" type="tns:dnsZone" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
   </xsd:complexType>
 
@@ -372,6 +395,8 @@
     <xsd:sequence>
       <xsd:element name="host" type="tns:dnsHost" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+
+    <xsd:attribute name="target" type="xsd:string" use="optional" />
   </xsd:complexType>
 
   <xsd:complexType name="projectRbac">
