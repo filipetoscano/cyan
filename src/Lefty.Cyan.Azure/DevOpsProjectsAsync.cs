@@ -70,6 +70,9 @@ public partial class AzService
                     "devops", "security", "group", "list",
                     "--scope", "project", "--project", p.Name );
 
+                if ( string.IsNullOrEmpty( q3.ContinuationToken ) == false )
+                    throw new NotImplementedException( "Pagination not implemented" );
+
                 p.Teams = new List<Team>();
                 p.Groups = new List<Group>();
 

@@ -38,14 +38,35 @@ public partial class AzService
          */
         foreach ( var p in org.Projects )
         {
-            var q3 = await DevOps<SecurityGroup>(
-                "devops", "security", "group", "list",
-                "--scope", "project", "--project", p.Name );
+            string? ct = null;
+            var groups = new List<Group>();
+
+            do
+            {
+                SecurityGroup q3;
+
+                if ( string.IsNullOrEmpty( ct ) == true )
+                {
+                    q3 = await DevOps<SecurityGroup>(
+                        "devops", "security", "group", "list",
+                        "--scope", "project", "--project", p.Name );
+                }
+                else
+                {
+                    q3 = await DevOps<SecurityGroup>(
+                        "devops", "security", "group", "list",
+                        "--scope", "project", "--project", p.Name,
+                        "--continuation-token", ct );
+                }
+
+                ct = q3.ContinuationToken;
+                groups.AddRange( q3.Groups );
+            } while ( string.IsNullOrEmpty( ct ) == false );
 
             p.Groups = new List<Group>();
             p.Teams = new List<Team>();
 
-            foreach ( var sg in q3.Groups )
+            foreach ( var sg in groups )
             {
                 var q4 = await DevOps<Dictionary<string, GroupMembership>>(
                     "devops", "security", "group", "membership", "list",
