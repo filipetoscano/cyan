@@ -447,7 +447,7 @@ public class ValidateCommand
         foreach ( XmlElement n in nodes )
         {
             var sn = n.Attributes[ "server" ]!.Value;
-            var mn = jump.SelectSingleNode( $" /c:jump/c:jump[ @server = '{sn}' ] ", mgr );
+            var mn = jump.SelectSingleNode( $" /c:jump//c:jump[ @server = '{sn}' ] ", mgr );
 
             if ( mn != null )
                 continue;

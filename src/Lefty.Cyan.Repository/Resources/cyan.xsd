@@ -214,20 +214,22 @@
   <xsd:element name="jump">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element name="jump" minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element name="description" type="xsd:string" minOccurs="0" />
+              <xsd:element name="jump" type="tns:jumpType" minOccurs="0" maxOccurs="unbounded" />
             </xsd:sequence>
 
-            <xsd:attribute name="server" type="xsd:string" use="required" />
+            <xsd:attribute name="name" type="xsd:string" use="optional" />
           </xsd:complexType>
         </xsd:element>
+
+        <xsd:element name="jump" type="tns:jumpType" minOccurs="0" maxOccurs="unbounded" />
       </xsd:sequence>
     </xsd:complexType>
 
     <xsd:unique name="uqJumpServer">
-      <xsd:selector xpath=" tns:jump " />
+      <xsd:selector xpath=" .//tns:jump " />
       <xsd:field xpath=" @server " />
     </xsd:unique>
   </xsd:element>
@@ -445,6 +447,15 @@
   <xsd:simpleType name="environmentNameType">
     <xsd:restriction base="xsd:string" />
   </xsd:simpleType>
+
+  <xsd:complexType name="jumpType">
+    <xsd:sequence>
+      <xsd:element name="description" type="xsd:string" minOccurs="0" />
+    </xsd:sequence>
+
+    <xsd:attribute name="server" type="xsd:string" use="required" />
+    <xsd:attribute name="provisioned" type="xsd:boolean" use="optional" default="true" />
+  </xsd:complexType>
 
   <xsd:simpleType name="personId">
     <xsd:restriction base="xsd:string">
