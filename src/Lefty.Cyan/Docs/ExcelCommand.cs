@@ -39,6 +39,8 @@ public class ExcelCommand
          * 
          */
         var devop = _repo.DevopsGet();
+        var jump = _repo.Jump().Data;
+
         var projects = devop.Projects.Select( x => x.Name ).OrderBy( x => x ).ToList();
 
 
@@ -145,16 +147,62 @@ public class ExcelCommand
         /*
          * Jump servers
          */
+        var groupName = ( XmlElement elem ) =>
+        {
+            if ( elem.ParentNode!.LocalName == "jump" )
+                return "";
+
+            var p = (XmlElement) elem.ParentNode;
+
+            if ( p.HasAttribute( "name" ) == true )
+                return p.Attributes[ "name" ]!.Value;
+
+            return "";
+        };
+
+
         BeginJumpSheet( xlsxWriter );
 
         foreach ( var p in dir.SelectMany( x => x.Persons ?? [] ) )
         {
             foreach ( var rb in p.Rbac!.SelectNodes( " /c:rbac/c:jump ", mgr )!.OfType<XmlElement>() )
             {
+                var server = rb.Attributes[ "server" ]!.Value;
+
+
+                /*
+                 * 
+                 */
+                var elem = (XmlElement?) jump.SelectSingleNode( $" /c:jump//c:jump[ @server = '{server}' ] ", mgr );
+
+                if ( elem == null )
+                {
+
+                    continue;
+                }
+
+                if ( elem.HasAttribute( "provisioned" ) == true )
+                {
+                    var v = bool.Parse( elem.Attributes[ "provisioned" ]!.Value );
+
+                    if ( v == false )
+                    {
+                        _logger.LogInformation( "Jump {Jump} not yet provisioned, skip", server );
+                        continue;
+                    }
+                }
+
+
+                /*
+                 * 
+                 */
+                var group = groupName( elem );
+
                 xlsxWriter
                     .BeginRow()
                     .Write( p.Username )
-                    .Write( rb.Attributes[ "server" ]!.Value );
+                    .Write( server )
+                    .Write( group );
             }
         }
 
@@ -313,6 +361,7 @@ public class ExcelCommand
 
             // Blue
             XlsxColumn.Formatted( 36 ),
+            XlsxColumn.Formatted( 36 ),
         };
 
         writer.BeginWorksheet( "Jump", 2, 1, columns: columns );
@@ -320,15 +369,17 @@ public class ExcelCommand
         writer.BeginRow()
             .Write( "Entra", XP.OrangeDark )
             .Write( "Jump", XP.BlueDark )
+            .Write( "", XP.BlueDark )
             ;
 
         writer.BeginRow()
             .Write( "Username", XP.OrangeLight )
             .Write( "Server", XP.BlueLight )
+            .Write( "Group", XP.BlueLight )
             ;
 
         writer
-            .SetAutoFilter( 2, 1, 1, 2 );
+            .SetAutoFilter( 2, 1, 1, 3 );
     }
 
 
