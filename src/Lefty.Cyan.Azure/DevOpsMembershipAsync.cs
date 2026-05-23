@@ -122,7 +122,7 @@ public partial class AzService
          * Here, for the RBAC difference engine, we only want to return users (even if they
          * have not logged in) -- as such, we must exclude `managedIdentity` records.
          */
-        var q5 = await DevOps<MemberListResponse>( "devops", "user", "list" );
+        var q5 = await DevOps<MemberListResponse>( "devops", "user", "list", "--top", "1000" );
         org.Members = q5.Members
             .Where( x => x.User.SubjectKind == "user" )
             .Where( x => x.User.MetaType != "managedIdentity" )
