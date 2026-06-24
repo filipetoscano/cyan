@@ -43,7 +43,7 @@ public partial class AzService
          */
         var opt = options ?? new ProjectOptions();
 
-        var q1 = await DevOps<ProjectListResponse>( "devops", "project", "list" );
+        var q1 = await DevOps<ProjectListResponse>( "devops", "project", "list", "--top", "100" );
 
         var projects = new List<Project>();
         projects.AddRange( q1.Projects );

@@ -10,7 +10,7 @@ public partial class AzService
         /*
          * 
          */
-        var q1 = await DevOps<ProjectListResponse>( "devops", "project", "list" );
+        var q1 = await DevOps<ProjectListResponse>( "devops", "project", "list", "--top", "100" );
 
         var org = new Organization();
         org.Projects = q1.Projects;
