@@ -51,6 +51,18 @@ public static class XlsxWriterExtensions
 
 
     /// <summary />
+    public static XlsxWriter Write( this XlsxWriter writer, bool? value, XlsxStyle? style = null, int columnSpan = 1 )
+    {
+        if ( value.HasValue == false )
+            writer.Write( null, style, columnSpan );
+        else
+            writer.Write( value.Value, style, columnSpan );
+
+        return writer;
+    }
+
+
+    /// <summary />
     public static XlsxWriter Write<T>( this XlsxWriter writer, T value, XlsxStyle? style = null, int columnSpan = 1 )
         where T : struct, Enum
     {

@@ -168,6 +168,7 @@ public class ExcelCommand
             foreach ( var rb in p.Rbac!.SelectNodes( " /c:rbac/c:jump ", mgr )!.OfType<XmlElement>() )
             {
                 var server = rb.Attributes[ "server" ]!.Value;
+                var withAdmin = WithAdmin( rb );
 
 
                 /*
@@ -177,7 +178,7 @@ public class ExcelCommand
 
                 if ( elem == null )
                 {
-
+                    _logger.LogWarning( "Jump {Jump} not found", server );
                     continue;
                 }
 
@@ -202,7 +203,8 @@ public class ExcelCommand
                     .BeginRow()
                     .Write( p.Username )
                     .Write( server )
-                    .Write( group );
+                    .Write( group )
+                    .Write( withAdmin );
             }
         }
 
@@ -224,6 +226,24 @@ public class ExcelCommand
 
 
         return 0;
+    }
+
+
+    /// <summary />
+    private static bool? WithAdmin( XmlElement jump )
+    {
+        if ( jump.HasAttribute( "withAdmin" ) == false )
+            return null;
+
+        var v = jump.GetAttribute( "withAdmin" );
+
+        if ( v == "true" )
+            return true;
+
+        if ( v == "1" )
+            return true;
+
+        return null;
     }
 
 
@@ -361,7 +381,8 @@ public class ExcelCommand
 
             // Blue
             XlsxColumn.Formatted( 36 ),
-            XlsxColumn.Formatted( 36 ),
+            XlsxColumn.Formatted( 20 ),
+            XlsxColumn.Formatted( 15 ),
         };
 
         writer.BeginWorksheet( "Jump", 2, 1, columns: columns );
@@ -370,16 +391,18 @@ public class ExcelCommand
             .Write( "Entra", XP.OrangeDark )
             .Write( "Jump", XP.BlueDark )
             .Write( "", XP.BlueDark )
+            .Write( "", XP.BlueDark )
             ;
 
         writer.BeginRow()
             .Write( "Username", XP.OrangeLight )
             .Write( "Server", XP.BlueLight )
             .Write( "Group", XP.BlueLight )
+            .Write( "Admin?", XP.BlueLight )
             ;
 
         writer
-            .SetAutoFilter( 2, 1, 1, 3 );
+            .SetAutoFilter( 2, 1, 1, 4 );
     }
 
 

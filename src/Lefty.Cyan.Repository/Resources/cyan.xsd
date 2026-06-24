@@ -279,6 +279,7 @@
         <xsd:element name="jump" minOccurs="0" maxOccurs="unbounded">
           <xsd:complexType>
             <xsd:attribute name="server" type="xsd:string" use="required" />
+            <xsd:attribute name="withAdmin" type="xsd:boolean" use="optional" />
           </xsd:complexType>
         </xsd:element>
 
