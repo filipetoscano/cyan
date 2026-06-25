@@ -75,6 +75,12 @@
   <xsd:element name="devops">
     <xsd:complexType>
       <xsd:sequence>
+        <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:attribute name="name" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+
         <xsd:element name="project" minOccurs="0" maxOccurs="unbounded">
           <xsd:complexType>
             <xsd:sequence>
@@ -100,9 +106,34 @@
             </xsd:sequence>
             <xsd:attribute name="name" type="xsd:string" use="required" />
           </xsd:complexType>
+
+          <xsd:unique name="uqGroup">
+            <xsd:selector xpath=" tns:group " />
+            <xsd:field xpath=" @name " />
+          </xsd:unique>
+
+          <xsd:unique name="uqTeam">
+            <xsd:selector xpath=" tns:team " />
+            <xsd:field xpath=" @name " />
+          </xsd:unique>
+
+          <xsd:unique name="uqRepo">
+            <xsd:selector xpath=" tns:repository " />
+            <xsd:field xpath=" @name " />
+          </xsd:unique>
         </xsd:element>
       </xsd:sequence>
     </xsd:complexType>
+
+    <xsd:unique name="uqOrgGroup">
+      <xsd:selector xpath=" tns:group " />
+      <xsd:field xpath=" @name " />
+    </xsd:unique>
+
+    <xsd:unique name="uqOrgProject">
+      <xsd:selector xpath=" tns:project " />
+      <xsd:field xpath=" @name " />
+    </xsd:unique>
   </xsd:element>
 
 
@@ -186,7 +217,7 @@
       </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:unique name="uqGroup">
+    <xsd:unique name="uqEntraGroup">
       <xsd:selector xpath=" tns:group " />
       <xsd:field xpath=" @name " />
     </xsd:unique>
@@ -307,6 +338,12 @@
         <xsd:element name="devops">
           <xsd:complexType>
             <xsd:sequence>
+              <xsd:element name="group" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                  <xsd:attribute name="name" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+
               <xsd:element name="project" type="tns:projectRbac" minOccurs="0" maxOccurs="unbounded" />
             </xsd:sequence>
 
@@ -328,22 +365,27 @@
       </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:key name="uqJumpServers">
+    <xsd:key name="uqRbacJumpServers">
       <xsd:selector xpath=" tns:jump " />
       <xsd:field xpath=" @server " />
     </xsd:key>
 
-    <xsd:key name="uqEntraGroup">
+    <xsd:key name="uqRbacEntraGroup">
       <xsd:selector xpath=" tns:entra/tns:group " />
       <xsd:field xpath=" @name " />
     </xsd:key>
 
-    <xsd:key name="uqDevopsProjects">
+    <xsd:key name="uqRbacDevopsGroup">
+      <xsd:selector xpath=" tns:devops/tns:group " />
+      <xsd:field xpath=" @name " />
+    </xsd:key>
+
+    <xsd:key name="uqRbacDevopsProjects">
       <xsd:selector xpath=" tns:devops/tns:project " />
       <xsd:field xpath=" @name " />
     </xsd:key>
 
-    <xsd:key name="uqAzureResx">
+    <xsd:key name="uqRbacAzureResx">
       <xsd:selector xpath=" tns:azure/tns:* " />
       <xsd:field xpath=" @name " />
       <xsd:field xpath=" @role " />

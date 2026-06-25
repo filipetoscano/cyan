@@ -3,6 +3,7 @@ using Lefty.Cyan.Repository.Model;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Spectre.Console;
 using System.Xml;
 
 namespace Lefty.Cyan;
@@ -175,6 +176,7 @@ public class ValidateCommand
         if ( isOk == false )
             return 1;
 
+        AnsiConsole.MarkupLine( "[green]Validated OK[/]" );
         return 0;
     }
 
@@ -312,11 +314,8 @@ public class ValidateCommand
         if ( devops == null )
             return new Result<bool>( true );
 
+        var ok = true;
         var mgr = _repo.NamespaceManager();
-        var nodes = rbac.SelectNodes( " /c:rbac/c:devops/c:project ", mgr )!;
-
-        if ( nodes.Count == 0 )
-            return new Result<bool>( true );
 
 
         /*
@@ -332,9 +331,26 @@ public class ValidateCommand
 
 
         /*
-         * 
+         * Org projects
          */
-        var ok = true;
+        var groups = rbac.SelectNodes( " /c:rbac/c:devops/c:group/@name ", mgr )!;
+
+        foreach ( var groupName in groups.OfType<XmlAttribute>().Select( x => x.Value ) )
+        {
+            var g = devops.SelectSingleNode( $" /c:devops/c:group[ @name = '{groupName}' ] ", mgr );
+
+            if ( g == null )
+            {
+                ok = false;
+                _logger.LogError( "{File} grants membership to group Org/{GroupName} which is not defined", file, groupName );
+            }
+        }
+
+
+        /*
+         * Project RBAC
+         */
+        var nodes = rbac.SelectNodes( " /c:rbac/c:devops/c:project ", mgr )!;
 
         foreach ( XmlElement n in nodes )
         {
@@ -379,7 +395,7 @@ public class ValidateCommand
          * 
          */
         if ( ok == false )
-            return new Result<bool>( "F001", "Some DevOps projects failed to match" );
+            return new Result<bool>( "F001", "Isses found" );
 
         return new Result<bool>( true );
     }
